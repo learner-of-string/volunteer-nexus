@@ -1,7 +1,7 @@
 import cors from "cors";
 import "dotenv/config";
 import express from "express";
-import { MongoClient, ServerApiVersion } from "mongodb";
+import { MongoClient, ObjectId, ServerApiVersion } from "mongodb";
 
 // initiate express app
 const app = express();
@@ -37,6 +37,14 @@ async function run() {
 
         app.get("/volunteers/active", async (req, res) => {
             const result = await postCollection.find().toArray();
+            res.send(result);
+        });
+
+        app.get("/volunteers/post/:id", async (req, res) => {
+            const { id } = req.params;
+            const result = await postCollection.findOne({
+                _id: new ObjectId(id),
+            });
             res.send(result);
         });
     } finally {

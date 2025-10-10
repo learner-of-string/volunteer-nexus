@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/resizable-navbar";
 import { useState } from "react";
 import { Outlet } from "react-router-dom";
+import Footer from "@/components/Footer";
 
 const TopNavBar = () => {
     const navItems = [
@@ -31,7 +32,7 @@ const TopNavBar = () => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     return (
-        <div className="relative w-full -pt-36">
+        <div className="relative w-full pt-24 md:pt-28 min-h-screen flex flex-col">
             <Navbar>
                 {/* Desktop Navigation */}
                 <NavBody>
@@ -78,9 +79,11 @@ const TopNavBar = () => {
                         </div>
                     </MobileNavMenu>
                 </MobileNav>
-                <Outlet />
             </Navbar>
-            {/* Navbar */}
+            <main className="flex-1">
+                <Outlet />
+            </main>
+            <Footer />
         </div>
     );
 };

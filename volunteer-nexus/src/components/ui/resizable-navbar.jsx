@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 import { IconMenu2, IconX } from "@tabler/icons-react";
 import {
     AnimatePresence,
-    motion,
+    motion as Motion,
     useMotionValueEvent,
     useScroll,
 } from "framer-motion";
@@ -18,8 +18,15 @@ export const Navbar = ({ children, className }) => {
         offset: ["start start", "end start"],
     });
     const [visible, setVisible] = useState(false);
+    const [solid, setSolid] = useState(false);
 
     useMotionValueEvent(scrollY, "change", (latest) => {
+        if (latest > 300) {
+            setSolid(true);
+            setVisible(true);
+            return;
+        }
+        setSolid(false);
         if (latest > 100) {
             setVisible(true);
         } else {
@@ -28,23 +35,23 @@ export const Navbar = ({ children, className }) => {
     });
 
     return (
-        <motion.div
+        <Motion.div
             ref={ref}
             // IMPORTANT: Change this to class of `fixed` if you want the navbar to be fixed
-            className={cn("sticky inset-x-0 top-5 z-40 w-full", className)}
+            className={cn("fixed inset-x-0 top-0 z-40 w-full", className)}
         >
             {React.Children.map(children, (child) =>
                 React.isValidElement(child)
-                    ? React.cloneElement(child, { visible })
+                    ? React.cloneElement(child, { visible, solid })
                     : child
             )}
-        </motion.div>
+        </Motion.div>
     );
 };
 
-export const NavBody = ({ children, className, visible }) => {
+export const NavBody = ({ children, className, visible, solid }) => {
     return (
-        <motion.div
+        <Motion.div
             animate={{
                 backdropFilter: visible ? "blur(10px)" : "none",
                 boxShadow: visible
@@ -63,12 +70,13 @@ export const NavBody = ({ children, className, visible }) => {
             }}
             className={cn(
                 "relative z-[60] mx-auto hidden w-full max-w-7xl flex-row items-center justify-between self-start rounded-full bg-transparent px-4 py-2 lg:flex dark:bg-transparent",
-                visible && "bg-white/80 dark:bg-neutral-950/80",
+                visible && !solid && "bg-blue-50",
+                solid && "bg-white",
                 className
             )}
         >
             {children}
-        </motion.div>
+        </Motion.div>
     );
 };
 
@@ -76,7 +84,7 @@ export const NavItems = ({ items, className, onItemClick }) => {
     const [hovered, setHovered] = useState(null);
 
     return (
-        <motion.div
+        <Motion.div
             onMouseLeave={() => setHovered(null)}
             className={cn(
                 "absolute inset-0 hidden flex-1 flex-row items-center justify-center space-x-2 text-sm font-medium text-zinc-600 transition duration-200 hover:text-zinc-800 lg:flex lg:space-x-2",
@@ -92,7 +100,7 @@ export const NavItems = ({ items, className, onItemClick }) => {
                     href={item.link}
                 >
                     {hovered === idx && (
-                        <motion.div
+                        <Motion.div
                             layoutId="hovered"
                             className="absolute inset-0 h-full w-full rounded-full bg-gray-100 dark:bg-neutral-800"
                         />
@@ -100,13 +108,13 @@ export const NavItems = ({ items, className, onItemClick }) => {
                     <span className="relative z-20">{item.name}</span>
                 </a>
             ))}
-        </motion.div>
+        </Motion.div>
     );
 };
 
-export const MobileNav = ({ children, className, visible }) => {
+export const MobileNav = ({ children, className, visible, solid }) => {
     return (
-        <motion.div
+        <Motion.div
             animate={{
                 backdropFilter: visible ? "blur(10px)" : "none",
                 boxShadow: visible
@@ -125,12 +133,13 @@ export const MobileNav = ({ children, className, visible }) => {
             }}
             className={cn(
                 "relative z-50 mx-auto flex w-full max-w-[calc(100vw-2rem)] flex-col items-center justify-between bg-transparent px-0 py-2 lg:hidden",
-                visible && "bg-white/80 dark:bg-neutral-950/80",
+                visible && !solid && "bg-blue-50",
+                solid && "bg-white",
                 className
             )}
         >
             {children}
-        </motion.div>
+        </Motion.div>
     );
 };
 
@@ -147,11 +156,11 @@ export const MobileNavHeader = ({ children, className }) => {
     );
 };
 
-export const MobileNavMenu = ({ children, className, isOpen, onClose }) => {
+export const MobileNavMenu = ({ children, className, isOpen }) => {
     return (
         <AnimatePresence>
             {isOpen && (
-                <motion.div
+                <Motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
@@ -161,7 +170,7 @@ export const MobileNavMenu = ({ children, className, isOpen, onClose }) => {
                     )}
                 >
                     {children}
-                </motion.div>
+                </Motion.div>
             )}
         </AnimatePresence>
     );
@@ -196,7 +205,6 @@ export const NavbarLogo = () => {
 
 export const NavbarButton = ({
     href,
-    as: Tag = "a",
     children,
     className,
     variant = "primary",
@@ -215,12 +223,12 @@ export const NavbarButton = ({
     };
 
     return (
-        <Tag
+        <a
             href={href || undefined}
             className={cn(baseStyles, variantStyles[variant], className)}
             {...props}
         >
             {children}
-        </Tag>
+        </a>
     );
 };
