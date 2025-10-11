@@ -8,16 +8,9 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import { categoriesItem } from "../../lib/categoriesItem";
 
 const QueryHub = () => {
-    const categoriesItem = [
-        "healthcare",
-        "education",
-        "community",
-        "animal",
-        "technology",
-    ];
-
     return (
         <div className="container mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="w-full md:max-w-sm">
@@ -30,7 +23,6 @@ const QueryHub = () => {
                     </SelectTrigger>
                     <SelectContent>
                         <SelectGroup>
-                            <SelectLabel>All Categories</SelectLabel>
                             {categoriesItem.map((category) => (
                                 <SelectItem key={category} value={category}>
                                     {category.charAt(0).toUpperCase() +

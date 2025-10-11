@@ -1,0 +1,539 @@
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+    Select,
+    SelectContent,
+    SelectGroup,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import { LuChevronDown, LuUpload, LuCheck } from "react-icons/lu";
+import { IoAlertCircle } from "react-icons/io5";
+import { categoriesItem } from "../lib/categoriesItem";
+import {
+    FaUsers,
+    FaMapMarkerAlt,
+    FaCalendarAlt,
+    FaImage,
+    FaBuilding,
+    FaEnvelope,
+} from "react-icons/fa";
+
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from "@/components/ui/popover";
+import { useState } from "react";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+
+const PostToGetVolunteer = () => {
+    const [open, setOpen] = useState(false);
+    const [date, setDate] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [success, setSuccess] = useState(false);
+    const [errors, setErrors] = useState({});
+    const [formData, setFormData] = useState({
+        postTitle: "",
+        photoUrl: "",
+        category: "",
+        deadline: null,
+        necessaryVolunteer: "",
+        location: "",
+        description: "",
+        organizer: "",
+        orgEmail: "",
+    });
+
+    const handleInputChange = (field, value) => {
+        setFormData((prev) => ({ ...prev, [field]: value }));
+        // Clear error when user starts typing
+        if (errors[field]) {
+            setErrors((prev) => ({ ...prev, [field]: "" }));
+        }
+    };
+
+    const validateForm = () => {
+        const newErrors = {};
+
+        if (!formData.postTitle.trim())
+            newErrors.postTitle = "Post title is required";
+        if (!formData.photoUrl.trim())
+            newErrors.photoUrl = "Photo URL is required";
+        if (!formData.category) newErrors.category = "Category is required";
+        if (!date) newErrors.deadline = "Deadline is required";
+        if (!formData.necessaryVolunteer.trim())
+            newErrors.necessaryVolunteer = "Number of volunteers is required";
+        if (!formData.location.trim())
+            newErrors.location = "Location is required";
+        if (!formData.description.trim())
+            newErrors.description = "Description is required";
+        if (!formData.organizer.trim())
+            newErrors.organizer = "Organization name is required";
+        if (!formData.orgEmail.trim())
+            newErrors.orgEmail = "Organization email is required";
+        else if (!/\S+@\S+\.\S+/.test(formData.orgEmail))
+            newErrors.orgEmail = "Please enter a valid email";
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        if (!validateForm()) return;
+
+        setLoading(true);
+
+        // Simulate API call
+        setTimeout(() => {
+            setLoading(false);
+            setSuccess(true);
+            // Reset form
+            setFormData({
+                postTitle: "",
+                photoUrl: "",
+                category: "",
+                deadline: null,
+                necessaryVolunteer: "",
+                location: "",
+                description: "",
+                organizer: "",
+                orgEmail: "",
+            });
+            setDate(null);
+        }, 2000);
+    };
+
+    if (success) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center px-4">
+                <div className="max-w-md w-full bg-white rounded-2xl p-8 text-center shadow-xl border border-green-100">
+                    <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+                        <LuCheck className="text-white text-2xl" />
+                    </div>
+                    <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                        Success!
+                    </h2>
+                    <p className="text-gray-700 mb-6">
+                        Your volunteer opportunity has been posted successfully.
+                        Volunteers will be able to see and apply for your
+                        opportunity.
+                    </p>
+                    <Button
+                        onClick={() => setSuccess(false)}
+                        className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
+                    >
+                        Post Another Opportunity
+                    </Button>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="min-h-screen bg-gray-50">
+            <div className="max-w-4xl mx-auto px-4 py-8">
+                {/* Header Section */}
+                <div className="text-center mb-12">
+                    <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full mb-6 shadow-lg">
+                        <FaUsers className="text-white text-2xl" />
+                    </div>
+                    <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+                        Create a New Opportunity
+                    </h1>
+                    <p className="text-lg text-gray-700 max-w-2xl mx-auto">
+                        Fill out the form below to find passionate volunteers
+                        for your cause. Make your opportunity stand out with a
+                        compelling description.
+                    </p>
+                </div>
+
+                {/* Form Card */}
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                    <form onSubmit={handleSubmit} className="p-8 space-y-8">
+                        {/* Post Title */}
+                        <div className="space-y-3">
+                            <Label
+                                htmlFor="postTitle"
+                                className="text-sm font-semibold text-gray-900 flex items-center gap-2"
+                            >
+                                <div className="w-3 h-3 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full shadow-sm"></div>
+                                Post Title
+                            </Label>
+                            <Input
+                                type="text"
+                                placeholder="e.g., Community Garden Volunteer"
+                                name="postTitle"
+                                value={formData.postTitle}
+                                onChange={(e) =>
+                                    handleInputChange(
+                                        "postTitle",
+                                        e.target.value
+                                    )
+                                }
+                                className={`h-12 ${
+                                    errors.postTitle
+                                        ? "border-red-500 focus:border-red-500"
+                                        : ""
+                                }`}
+                            />
+                            {errors.postTitle && (
+                                <p className="text-red-500 text-sm flex items-center gap-1">
+                                    <IoAlertCircle className="w-4 h-4" />
+                                    {errors.postTitle}
+                                </p>
+                            )}
+                        </div>
+
+                        {/* Photo URL */}
+                        <div className="space-y-3">
+                            <Label
+                                htmlFor="photoUrl"
+                                className="text-sm font-semibold text-gray-900 flex items-center gap-2"
+                            >
+                                <FaImage className="text-blue-500" />
+                                Thumbnail Photo URL
+                            </Label>
+                            <div className="relative">
+                                <Input
+                                    type="url"
+                                    placeholder="https://example.com/image.jpg"
+                                    name="photoUrl"
+                                    value={formData.photoUrl}
+                                    onChange={(e) =>
+                                        handleInputChange(
+                                            "photoUrl",
+                                            e.target.value
+                                        )
+                                    }
+                                    className={`h-12 pl-10 ${
+                                        errors.photoUrl
+                                            ? "border-red-500 focus:border-red-500"
+                                            : ""
+                                    }`}
+                                />
+                                <LuUpload className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                            </div>
+                            {errors.photoUrl && (
+                                <p className="text-red-500 text-sm flex items-center gap-1">
+                                    <IoAlertCircle className="w-4 h-4" />
+                                    {errors.photoUrl}
+                                </p>
+                            )}
+                        </div>
+                        {/* Category and Deadline Row */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="space-y-3">
+                                <Label
+                                    htmlFor="category"
+                                    className="text-sm font-semibold text-gray-900 flex items-center gap-2"
+                                >
+                                    <Badge
+                                        variant="outline"
+                                        className="text-xs bg-blue-50 text-blue-700 border-blue-200"
+                                    >
+                                        Category
+                                    </Badge>
+                                </Label>
+                                <Select
+                                    value={formData.category}
+                                    onValueChange={(value) =>
+                                        handleInputChange("category", value)
+                                    }
+                                >
+                                    <SelectTrigger
+                                        className={`h-12 ${
+                                            errors.category
+                                                ? "border-red-500 focus:border-red-500"
+                                                : ""
+                                        }`}
+                                    >
+                                        <SelectValue placeholder="Select a category" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectGroup>
+                                            {categoriesItem.map((category) => (
+                                                <SelectItem
+                                                    key={category}
+                                                    value={category}
+                                                >
+                                                    {category
+                                                        .charAt(0)
+                                                        .toUpperCase() +
+                                                        category.slice(1)}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectGroup>
+                                    </SelectContent>
+                                </Select>
+                                {errors.category && (
+                                    <p className="text-red-500 text-sm flex items-center gap-1">
+                                        <IoAlertCircle className="w-4 h-4" />
+                                        {errors.category}
+                                    </p>
+                                )}
+                            </div>
+
+                            <div className="space-y-3">
+                                <Label
+                                    htmlFor="deadline"
+                                    className="text-sm font-semibold text-gray-900 flex items-center gap-2"
+                                >
+                                    <FaCalendarAlt className="text-red-500" />
+                                    Deadline
+                                </Label>
+                                <Popover open={open} onOpenChange={setOpen}>
+                                    <PopoverTrigger asChild>
+                                        <Button
+                                            variant="outline"
+                                            id="deadline"
+                                            className={`h-12 w-full justify-between font-normal ${
+                                                errors.deadline
+                                                    ? "border-red-500 focus:border-red-500"
+                                                    : ""
+                                            }`}
+                                        >
+                                            {date
+                                                ? date.toLocaleDateString()
+                                                : "Select date"}
+                                            <LuChevronDown />
+                                        </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent
+                                        className="w-auto overflow-hidden p-0"
+                                        align="start"
+                                    >
+                                        <Calendar
+                                            mode="single"
+                                            selected={date}
+                                            captionLayout="dropdown"
+                                            onSelect={(selectedDate) => {
+                                                setDate(selectedDate);
+                                                handleInputChange(
+                                                    "deadline",
+                                                    selectedDate
+                                                );
+                                                setOpen(false);
+                                            }}
+                                        />
+                                    </PopoverContent>
+                                </Popover>
+                                {errors.deadline && (
+                                    <p className="text-red-500 text-sm flex items-center gap-1">
+                                        <IoAlertCircle className="w-4 h-4" />
+                                        {errors.deadline}
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+                        {/* Volunteers and Location Row */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="space-y-3">
+                                <Label
+                                    htmlFor="necessaryVolunteer"
+                                    className="text-sm font-semibold text-gray-900 flex items-center gap-2"
+                                >
+                                    <FaUsers className="text-gray-500" />
+                                    Number of Volunteers Needed
+                                </Label>
+                                <Input
+                                    type="number"
+                                    placeholder="e.g., 5"
+                                    name="necessaryVolunteer"
+                                    value={formData.necessaryVolunteer}
+                                    onChange={(e) =>
+                                        handleInputChange(
+                                            "necessaryVolunteer",
+                                            e.target.value
+                                        )
+                                    }
+                                    className={`h-12 ${
+                                        errors.necessaryVolunteer
+                                            ? "border-red-500 focus:border-red-500"
+                                            : ""
+                                    }`}
+                                />
+                                {errors.necessaryVolunteer && (
+                                    <p className="text-red-500 text-sm flex items-center gap-1">
+                                        <IoAlertCircle className="w-4 h-4" />
+                                        {errors.necessaryVolunteer}
+                                    </p>
+                                )}
+                            </div>
+
+                            <div className="space-y-3">
+                                <Label
+                                    htmlFor="location"
+                                    className="text-sm font-semibold text-gray-900 flex items-center gap-2"
+                                >
+                                    <FaMapMarkerAlt className="text-gray-500" />
+                                    Location
+                                </Label>
+                                <Input
+                                    type="text"
+                                    placeholder="e.g., City Park, Downtown"
+                                    name="location"
+                                    value={formData.location}
+                                    onChange={(e) =>
+                                        handleInputChange(
+                                            "location",
+                                            e.target.value
+                                        )
+                                    }
+                                    className={`h-12 ${
+                                        errors.location
+                                            ? "border-red-500 focus:border-red-500"
+                                            : ""
+                                    }`}
+                                />
+                                {errors.location && (
+                                    <p className="text-red-500 text-sm flex items-center gap-1">
+                                        <IoAlertCircle className="w-4 h-4" />
+                                        {errors.location}
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+                        {/* Description */}
+                        <div className="space-y-3">
+                            <Label
+                                htmlFor="description"
+                                className="text-sm font-semibold text-gray-900 flex items-center gap-2"
+                            >
+                                <div className="w-3 h-3 bg-gradient-to-r from-green-500 to-green-600 rounded-full shadow-sm"></div>
+                                Description
+                            </Label>
+                            <Textarea
+                                name="description"
+                                placeholder="Tell us more about the opportunity, what volunteers will do, and any requirements. Be specific about the tasks, time commitment, and any skills needed."
+                                value={formData.description}
+                                onChange={(e) =>
+                                    handleInputChange(
+                                        "description",
+                                        e.target.value
+                                    )
+                                }
+                                className={`min-h-[120px] ${
+                                    errors.description
+                                        ? "border-red-500 focus:border-red-500"
+                                        : ""
+                                }`}
+                            />
+                            {errors.description && (
+                                <p className="text-red-500 text-sm flex items-center gap-1">
+                                    <IoAlertCircle className="w-4 h-4" />
+                                    {errors.description}
+                                </p>
+                            )}
+                        </div>
+
+                        {/* Organization Details */}
+                        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-6 space-y-6 border border-blue-100">
+                            <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                                <FaBuilding className="text-blue-600" />
+                                Organization Details
+                            </h3>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="space-y-3">
+                                    <Label
+                                        htmlFor="organizer"
+                                        className="text-sm font-semibold text-gray-900 flex items-center gap-2"
+                                    >
+                                        <FaBuilding className="text-blue-500" />
+                                        Organization Name
+                                    </Label>
+                                    <Input
+                                        type="text"
+                                        placeholder="e.g., Green Earth Foundation"
+                                        name="organizer"
+                                        value={formData.organizer}
+                                        onChange={(e) =>
+                                            handleInputChange(
+                                                "organizer",
+                                                e.target.value
+                                            )
+                                        }
+                                        className={`h-12 ${
+                                            errors.organizer
+                                                ? "border-red-500 focus:border-red-500"
+                                                : ""
+                                        }`}
+                                    />
+                                    {errors.organizer && (
+                                        <p className="text-red-500 text-sm flex items-center gap-1">
+                                            <IoAlertCircle className="w-4 h-4" />
+                                            {errors.organizer}
+                                        </p>
+                                    )}
+                                </div>
+
+                                <div className="space-y-3">
+                                    <Label
+                                        htmlFor="orgEmail"
+                                        className="text-sm font-semibold text-gray-900 flex items-center gap-2"
+                                    >
+                                        <FaEnvelope className="text-blue-500" />
+                                        Organization Email
+                                    </Label>
+                                    <Input
+                                        type="email"
+                                        placeholder="e.g., contact@greenearth.org"
+                                        name="orgEmail"
+                                        value={formData.orgEmail}
+                                        onChange={(e) =>
+                                            handleInputChange(
+                                                "orgEmail",
+                                                e.target.value
+                                            )
+                                        }
+                                        className={`h-12 ${
+                                            errors.orgEmail
+                                                ? "border-red-500 focus:border-red-500"
+                                                : ""
+                                        }`}
+                                    />
+                                    {errors.orgEmail && (
+                                        <p className="text-red-500 text-sm flex items-center gap-1">
+                                            <IoAlertCircle className="w-4 h-4" />
+                                            {errors.orgEmail}
+                                        </p>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Submit Button */}
+                        <div className="pt-6 border-t border-gray-200">
+                            <Button
+                                type="submit"
+                                disabled={loading}
+                                className="w-full h-14 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold text-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
+                            >
+                                {loading ? (
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                        Creating Opportunity...
+                                    </div>
+                                ) : (
+                                    <div className="flex items-center gap-2">
+                                        <LuCheck className="w-5 h-5" />
+                                        Create Volunteer Opportunity
+                                    </div>
+                                )}
+                            </Button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default PostToGetVolunteer;

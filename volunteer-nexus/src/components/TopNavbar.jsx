@@ -21,7 +21,7 @@ const TopNavBar = () => {
         },
         {
             name: "Post Opportunity",
-            link: "/post/opportunity",
+            link: "/volunteer/add-post",
         },
         {
             name: "Dashboard",
@@ -32,7 +32,7 @@ const TopNavBar = () => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     return (
-        <div className="relative w-full pt-24 md:pt-28 min-h-screen flex flex-col">
+        <div className="relative w-full min-h-screen flex flex-col">
             <Navbar>
                 {/* Desktop Navigation */}
                 <NavBody>
@@ -80,7 +80,7 @@ const TopNavBar = () => {
                     </MobileNavMenu>
                 </MobileNav>
             </Navbar>
-            <main className="flex-1">
+            <main className="flex-1 pt-24 md:pt-28">
                 <Outlet />
             </main>
             <Footer />

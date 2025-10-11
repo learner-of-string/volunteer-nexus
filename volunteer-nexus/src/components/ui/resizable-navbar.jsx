@@ -13,10 +13,7 @@ import { Link } from "react-router-dom";
 
 export const Navbar = ({ children, className }) => {
     const ref = useRef(null);
-    const { scrollY } = useScroll({
-        target: ref,
-        offset: ["start start", "end start"],
-    });
+    const { scrollY } = useScroll();
     const [visible, setVisible] = useState(false);
     const [solid, setSolid] = useState(false);
 

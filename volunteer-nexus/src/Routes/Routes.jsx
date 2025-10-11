@@ -3,6 +3,7 @@ import App from "../App";
 import Page404 from "../Pages/Page404";
 import Home from "../Pages/Home/Home";
 import HuntingPost from "../Pages/HuntingPost";
+import PostToGetVolunteer from "../Pages/PostToGetVolunteer";
 
 const routes = createBrowserRouter([
     {
@@ -15,8 +16,12 @@ const routes = createBrowserRouter([
                 element: <Home />,
             },
             {
-                path: "/hunting-post/:id",
+                path: "/volunteer-need/:id",
                 element: <HuntingPost />,
+            },
+            {
+                path: "/volunteer/add-post",
+                element: <PostToGetVolunteer />,
             },
         ],
     },

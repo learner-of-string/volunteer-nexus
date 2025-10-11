@@ -91,7 +91,7 @@ const VolunteerNeedNow = () => {
                     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col h-full group">
                         {/* Image Section */}
                         <div className="relative w-full h-48 overflow-hidden rounded-t-2xl bg-gray-50">
-                            <Link to={`/hunting-post/${post._id}`}>
+                            <Link to={`/volunteer-need/${post._id}`}>
                                 <img
                                     src={post?.photoUrl}
                                     alt={post?.postTitle}
@@ -113,7 +113,7 @@ const VolunteerNeedNow = () => {
                         {/* Content Section */}
                         <div className="p-5 flex flex-col gap-3 flex-1">
                             <h1 className="font-semibold tracking-tight font-headline text-lg leading-snug hover:text-blue-600 transition-colors cursor-pointer line-clamp-2">
-                                <Link to={`/hunting-post/${post._id}`}>
+                                <Link to={`/volunteer-need/${post._id}`}>
                                     {post?.postTitle}
                                 </Link>
                             </h1>
@@ -141,7 +141,7 @@ const VolunteerNeedNow = () => {
                             {/* CTA Button */}
                             <div className="pt-3 mt-auto">
                                 <Link
-                                    to={`/hunting-post/${post._id}`}
+                                    to={`/volunteer-need/${post._id}`}
                                     className="block"
                                 >
                                     <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-all duration-200 hover:shadow-md">
