@@ -35,17 +35,50 @@ async function run() {
         const database = client.db("volunteerNexus");
         const postCollection = database.collection("volunteerNeedPosts");
 
-        app.get("/volunteers/active", async (req, res) => {
-            const result = await postCollection.find().toArray();
-            res.send(result);
+        app.get("/volunteers/all-posts", async (req, res) => {
+            try {
+                const result = await postCollection.find().toArray();
+                console.log(result);
+                res.status(200).send(result);
+            } catch (error) {
+                res.status(500).send(error.message);
+            }
+        });
+
+        app.get("/volunteers/active-posts", async (req, res) => {
+            try {
+                const result = await postCollection
+                    .aggregate([
+                        {
+                            $addFields: {
+                                deadlineDate: { $toDate: "$deadline" },
+                            },
+                        },
+                        {
+                            $match: {
+                                deadlineDate: { $gte: new Date() },
+                            },
+                        },
+                    ])
+                    .toArray();
+                console.log(result);
+
+                res.status(200).send(result);
+            } catch (error) {
+                res.status(500).send(error.message);
+            }
         });
 
         app.get("/volunteers/post/:id", async (req, res) => {
-            const { id } = req.params;
-            const result = await postCollection.findOne({
-                _id: new ObjectId(id),
-            });
-            res.send(result);
+            try {
+                const { id } = req.params;
+                const result = await postCollection.findOne({
+                    _id: new ObjectId(id),
+                });
+                res.status(200).send(result);
+            } catch (error) {
+                res.status(500).send(error.message);
+            }
         });
     } finally {
         // Ensures that the client will close when you finish/error

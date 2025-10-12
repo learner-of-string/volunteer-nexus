@@ -1,19 +1,11 @@
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import {
-    FaRegCalendarAlt,
-    FaUsers,
-    FaClock,
-    FaMapMarkerAlt,
-    FaUser,
-} from "react-icons/fa";
-import { MdLocationPin } from "react-icons/md";
-import { useParams, Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import formatDate from "../lib/formateDate";
+import { FaClock, FaMapMarkerAlt, FaUser, FaUsers } from "react-icons/fa";
 import { IoArrowBack } from "react-icons/io5";
+import { Link, useParams } from "react-router-dom";
+import formatDate from "../lib/formateDate";
 
 const HuntingPost = () => {
     const [currentPost, setCurrentPost] = useState(null);
@@ -32,6 +24,7 @@ const HuntingPost = () => {
             .get(`${import.meta.env.VITE_SERVER_URL}/volunteers/post/${id}`)
             .then((res) => {
                 setCurrentPost(res.data);
+                console.log(res.data);
                 setLoading(false);
             })
             .catch((err) => {
@@ -189,7 +182,13 @@ const HuntingPost = () => {
                                     Volunteers
                                 </h3>
                                 <p className="text-gray-600 text-sm leading-relaxed">
-                                    0 volunteers applied
+                                    {currentPost?.interestedVolunteers}{" "}
+                                    volunteer
+                                    {currentPost?.interestedVolunteers === 1
+                                        ? ""
+                                        : "s"}{" "}
+                                    applied out of{" "}
+                                    {currentPost?.necessaryVolunteers} needed
                                 </p>
                             </div>
                         </div>
@@ -226,14 +225,14 @@ const HuntingPost = () => {
                         <div className="flex flex-col sm:flex-row gap-4 justify-center">
                             <Button
                                 size="lg"
-                                className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
+                                className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 cursor-pointer"
                             >
                                 Apply as Volunteer
                             </Button>
                             <Button
                                 variant="outline"
                                 size="lg"
-                                className="px-8 py-3 text-lg font-semibold rounded-xl border-2 border-blue-200 text-blue-700 hover:bg-blue-50 transition-all duration-200"
+                                className="px-8 py-3 text-lg font-semibold rounded-xl border-2 border-blue-200 text-blue-700 hover:bg-blue-50 transition-all duration-200 cursor-pointer"
                             >
                                 Share Opportunity
                             </Button>

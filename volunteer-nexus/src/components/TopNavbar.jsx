@@ -24,8 +24,8 @@ const TopNavBar = () => {
             link: "/volunteer/add-post",
         },
         {
-            name: "Dashboard",
-            link: "/dashboard",
+            name: "Manage My Posts",
+            link: "/manage-post/me",
         },
     ];
 

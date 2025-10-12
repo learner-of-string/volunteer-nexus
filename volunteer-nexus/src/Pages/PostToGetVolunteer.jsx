@@ -10,26 +10,26 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { LuChevronDown, LuUpload, LuCheck } from "react-icons/lu";
-import { IoAlertCircle } from "react-icons/io5";
-import { categoriesItem } from "../lib/categoriesItem";
 import {
-    FaUsers,
-    FaMapMarkerAlt,
-    FaCalendarAlt,
-    FaImage,
     FaBuilding,
+    FaCalendarAlt,
     FaEnvelope,
+    FaImage,
+    FaMapMarkerAlt,
+    FaUsers,
 } from "react-icons/fa";
+import { IoAlertCircle } from "react-icons/io5";
+import { LuCheck, LuChevronDown, LuUpload } from "react-icons/lu";
+import { categoriesItem } from "../lib/categoriesItem";
 
+import { Badge } from "@/components/ui/badge";
 import {
     Popover,
     PopoverContent,
     PopoverTrigger,
 } from "@/components/ui/popover";
-import { useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
+import { useState } from "react";
 
 const PostToGetVolunteer = () => {
     const [open, setOpen] = useState(false);
@@ -522,7 +522,7 @@ const PostToGetVolunteer = () => {
                                         Creating Opportunity...
                                     </div>
                                 ) : (
-                                    <div className="flex items-center gap-2">
+                                    <div className="flex items-center gap-2 cursor-pointer">
                                         <LuCheck className="w-5 h-5" />
                                         Create Volunteer Opportunity
                                     </div>

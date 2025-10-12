@@ -1,0 +1,483 @@
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import axios from "axios";
+import React, { useEffect, useState } from "react";
+import {
+    FaCalendarAlt,
+    FaClipboardList,
+    FaClock,
+    FaEdit,
+    FaHeart,
+    FaMapMarkerAlt,
+    FaPlus,
+    FaTrash,
+    FaUsers,
+} from "react-icons/fa";
+import { LuSettings, LuUserCheck, LuUserX } from "react-icons/lu";
+import formatDate from "../lib/formateDate";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+const ManageMyPost = () => {
+    const [myVolunteerPosts, setMyVolunteerPosts] = useState([]);
+    const [myVolunteerRequests, setMyVolunteerRequests] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    // Mock data - in real app, this would come from API
+    useEffect(() => {
+        setMyVolunteerRequests([
+            {
+                id: 1,
+                postTitle: "Elderly Home Companionship Drive",
+                category: "social service",
+                organizer: "Peace Haven Retirement Home",
+                appliedDate: "2025-01-15T10:30:00Z",
+                status: "pending",
+            },
+            {
+                id: 2,
+                postTitle: "Youth Robotics Workshop Mentor",
+                category: "education",
+                organizer: "Tech Innovations Lab",
+                appliedDate: "2025-01-10T14:20:00Z",
+                status: "accepted",
+            },
+        ]);
+
+        setLoading(false);
+
+        axios
+            .get(`${import.meta.env.VITE_SERVER_URL}/volunteers/active`)
+            .then((res) => {
+                console.log(res.data);
+                setMyVolunteerPosts(res.data);
+            });
+    }, []);
+
+    const handleUpdatePost = (postId) => {
+        console.log("Update post:", postId);
+        // TODO: Implement update functionality
+    };
+
+    const handleDeletePost = (postId) => {
+        console.log("Delete post:", postId);
+        // TODO: Implement delete functionality
+    };
+
+    const handleCancelRequest = (requestId) => {
+        console.log("Cancel request:", requestId);
+        // TODO: Implement cancel request functionality
+    };
+
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+                <div className="text-center">
+                    <div className="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-4"></div>
+                    <p className="text-gray-600">Loading your posts...</p>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="min-h-screen bg-gray-50">
+            <div className="max-w-7xl mx-auto px-4 py-8">
+                {/* Header Section */}
+                <div className="text-center mb-12">
+                    <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full mb-6 shadow-lg">
+                        <LuSettings className="text-white text-3xl" />
+                    </div>
+                    <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+                        Manage My Posts
+                    </h1>
+                    <p className="text-lg text-gray-700 max-w-2xl mx-auto">
+                        Keep track of your volunteer opportunities and manage
+                        your applications
+                    </p>
+                </div>
+
+                <Tabs defaultValue="volunteerPost" className="w-full">
+                    <div className="flex justify-center mb-8">
+                        <div className="relative">
+                            <TabsList className="grid w-full max-w-md grid-cols-2 bg-gray-100 p-1.5 rounded-xl shadow-inner border border-gray-200 h-auto">
+                                <TabsTrigger
+                                    value="volunteerPost"
+                                    className="flex items-center gap-2 px-6 py-4 text-sm font-medium transition-all duration-200 data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-sm data-[state=inactive]:bg-transparent data-[state=inactive]:text-gray-600 data-[state=inactive]:hover:bg-gray-50 data-[state=inactive]:hover:text-gray-900 rounded-lg h-auto min-h-[48px]"
+                                >
+                                    <FaClipboardList className="w-4 h-4" />
+                                    <span className="hidden sm:inline">
+                                        My Posts
+                                    </span>
+                                    <span className="sm:hidden">Posts</span>
+                                    {myVolunteerPosts.length > 0 && (
+                                        <Badge
+                                            variant="secondary"
+                                            className="ml-1 bg-blue-100 text-blue-700 text-xs px-2 py-0.5 rounded-full"
+                                        >
+                                            {myVolunteerPosts.length}
+                                        </Badge>
+                                    )}
+                                </TabsTrigger>
+                                <TabsTrigger
+                                    value="volunteerReq"
+                                    className="flex items-center gap-2 px-6 py-4 text-sm font-medium transition-all duration-200 data-[state=active]:bg-white data-[state=active]:text-green-600 data-[state=active]:shadow-sm data-[state=inactive]:bg-transparent data-[state=inactive]:text-gray-600 data-[state=inactive]:hover:bg-gray-50 data-[state=inactive]:hover:text-gray-900 rounded-lg h-auto min-h-[48px]"
+                                >
+                                    <FaHeart className="w-4 h-4" />
+                                    <span className="hidden sm:inline">
+                                        Volunteer Request
+                                    </span>
+                                    <span className="sm:hidden">Apps</span>
+                                    {myVolunteerRequests.length > 0 && (
+                                        <Badge
+                                            variant="secondary"
+                                            className="ml-1 bg-green-100 text-green-700 text-xs px-2 py-0.5 rounded-full"
+                                        >
+                                            {myVolunteerRequests.length}
+                                        </Badge>
+                                    )}
+                                </TabsTrigger>
+                            </TabsList>
+                        </div>
+                    </div>
+                    <TabsContent
+                        value="volunteerPost"
+                        className="mt-0 animate-in fade-in-50 duration-300"
+                    >
+                        {/* My Volunteer Need Posts Section */}
+                        <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden transform transition-all duration-300 hover:shadow-xl">
+                            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-6 border-b border-gray-100">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-4">
+                                        <div className="p-3 bg-blue-100 rounded-xl shadow-sm">
+                                            <FaClipboardList className="text-blue-600 text-2xl" />
+                                        </div>
+                                        <div>
+                                            <h2 className="text-2xl font-bold text-gray-900 mb-1">
+                                                My Volunteer Need Posts
+                                            </h2>
+                                            <p className="text-gray-600 text-sm">
+                                                Posts you've created to find
+                                                volunteers
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div className="text-right">
+                                        <div className="text-2xl font-bold text-blue-600">
+                                            {myVolunteerPosts.length}
+                                        </div>
+                                        <div className="text-xs text-gray-500 uppercase tracking-wide">
+                                            Total Posts
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="p-6">
+                                {myVolunteerPosts.length > 0 ? (
+                                    <div className="overflow-x-auto">
+                                        <table className="w-full">
+                                            <thead>
+                                                <tr className="border-b border-gray-200">
+                                                    <th className="text-left py-3 px-4 font-semibold text-gray-900">
+                                                        Post Title
+                                                    </th>
+                                                    <th className="text-left py-3 px-4 font-semibold text-gray-900">
+                                                        Category
+                                                    </th>
+                                                    <th className="text-left py-3 px-4 font-semibold text-gray-900">
+                                                        Volunteers
+                                                    </th>
+                                                    <th className="text-left py-3 px-4 font-semibold text-gray-900">
+                                                        Deadline
+                                                    </th>
+                                                    <th className="text-left py-3 px-4 font-semibold text-gray-900">
+                                                        Location
+                                                    </th>
+                                                    <th className="text-center py-3 px-4 font-semibold text-gray-900">
+                                                        Actions
+                                                    </th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {myVolunteerPosts.map(
+                                                    (post) => (
+                                                        <tr
+                                                            key={post._id}
+                                                            className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                                                        >
+                                                            <td className="py-4 px-4">
+                                                                <div className="font-medium text-gray-900">
+                                                                    {
+                                                                        post.postTitle
+                                                                    }
+                                                                </div>
+                                                            </td>
+                                                            <td className="py-4 px-4">
+                                                                <Badge
+                                                                    variant="outline"
+                                                                    className="bg-blue-50 text-blue-700 border-blue-200"
+                                                                >
+                                                                    {
+                                                                        post.category
+                                                                    }
+                                                                </Badge>
+                                                            </td>
+                                                            <td className="py-4 px-4">
+                                                                <div className="flex items-center gap-2 text-sm">
+                                                                    <FaUsers className="text-gray-400" />
+                                                                    <span className="text-gray-600">
+                                                                        {
+                                                                            post.interestedVolunteers
+                                                                        }
+                                                                        /
+                                                                        {
+                                                                            post.necessaryVolunteers
+                                                                        }
+                                                                    </span>
+                                                                </div>
+                                                            </td>
+                                                            <td className="py-4 px-4">
+                                                                <div className="flex items-center gap-2 text-sm text-gray-600">
+                                                                    <FaCalendarAlt className="text-gray-400" />
+                                                                    {formatDate(
+                                                                        post.deadline
+                                                                    )}
+                                                                </div>
+                                                            </td>
+                                                            <td className="py-4 px-4">
+                                                                <div className="flex items-center gap-2 text-sm text-gray-600">
+                                                                    <FaMapMarkerAlt className="text-gray-400" />
+                                                                    {
+                                                                        post.location
+                                                                    }
+                                                                </div>
+                                                            </td>
+                                                            <td className="py-4 px-4">
+                                                                <div className="flex items-center gap-2 justify-center">
+                                                                    <Button
+                                                                        size="sm"
+                                                                        variant="outline"
+                                                                        onClick={() =>
+                                                                            handleUpdatePost(
+                                                                                post.id
+                                                                            )
+                                                                        }
+                                                                        className="text-blue-600 border-blue-200 hover:bg-blue-50"
+                                                                    >
+                                                                        <FaEdit className="w-3 h-3 mr-1" />
+                                                                        Update
+                                                                    </Button>
+                                                                    <Button
+                                                                        size="sm"
+                                                                        variant="outline"
+                                                                        onClick={() =>
+                                                                            handleDeletePost(
+                                                                                post.id
+                                                                            )
+                                                                        }
+                                                                        className="text-red-600 border-red-200 hover:bg-red-50"
+                                                                    >
+                                                                        <FaTrash className="w-3 h-3 mr-1" />
+                                                                        Delete
+                                                                    </Button>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    )
+                                                )}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                ) : (
+                                    <div className="text-center py-12">
+                                        <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                            <FaPlus className="text-gray-400 text-2xl" />
+                                        </div>
+                                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                                            No posts yet
+                                        </h3>
+                                        <p className="text-gray-600 mb-6">
+                                            You haven't created any volunteer
+                                            opportunities yet.
+                                        </p>
+                                        <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+                                            Create Your First Post
+                                        </Button>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </TabsContent>
+                    <TabsContent
+                        value="volunteerReq"
+                        className="mt-0 animate-in fade-in-50 duration-300"
+                    >
+                        {/* My Volunteer Request Posts Section */}
+                        <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden transform transition-all duration-300 hover:shadow-xl">
+                            <div className="bg-gradient-to-r from-green-50 to-emerald-50 px-6 py-6 border-b border-gray-100">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-4">
+                                        <div className="p-3 bg-green-100 rounded-xl shadow-sm">
+                                            <FaHeart className="text-green-600 text-2xl" />
+                                        </div>
+                                        <div>
+                                            <h2 className="text-2xl font-bold text-gray-900 mb-1">
+                                                People interested to work
+                                            </h2>
+                                            <p className="text-gray-600 text-sm">
+                                                People who responded to your
+                                                post
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div className="text-right">
+                                        <div className="text-2xl font-bold text-green-600">
+                                            {myVolunteerRequests.length}
+                                        </div>
+                                        <div className="text-xs text-gray-500 uppercase tracking-wide">
+                                            Applications
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="p-6">
+                                {myVolunteerRequests.length > 0 ? (
+                                    <div className="overflow-x-auto">
+                                        <table className="w-full">
+                                            <thead>
+                                                <tr className="border-b border-gray-200">
+                                                    <th className="text-left py-3 px-4 font-semibold text-gray-900">
+                                                        Post Title
+                                                    </th>
+                                                    <th className="text-left py-3 px-4 font-semibold text-gray-900">
+                                                        Category
+                                                    </th>
+                                                    <th className="text-left py-3 px-4 font-semibold text-gray-900">
+                                                        Organizer
+                                                    </th>
+                                                    <th className="text-left py-3 px-4 font-semibold text-gray-900">
+                                                        Applied Date
+                                                    </th>
+                                                    <th className="text-left py-3 px-4 font-semibold text-gray-900">
+                                                        Status
+                                                    </th>
+                                                    <th className="text-center py-3 px-4 font-semibold text-gray-900">
+                                                        Actions
+                                                    </th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {myVolunteerRequests.map(
+                                                    (request) => (
+                                                        <tr
+                                                            key={request.id}
+                                                            className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                                                        >
+                                                            <td className="py-4 px-4">
+                                                                <div className="font-medium text-gray-900">
+                                                                    {
+                                                                        request.postTitle
+                                                                    }
+                                                                </div>
+                                                            </td>
+                                                            <td className="py-4 px-4">
+                                                                <Badge
+                                                                    variant="outline"
+                                                                    className="bg-green-50 text-green-700 border-green-200"
+                                                                >
+                                                                    {
+                                                                        request.category
+                                                                    }
+                                                                </Badge>
+                                                            </td>
+                                                            <td className="py-4 px-4">
+                                                                <div className="text-gray-600">
+                                                                    {
+                                                                        request.organizer
+                                                                    }
+                                                                </div>
+                                                            </td>
+                                                            <td className="py-4 px-4">
+                                                                <div className="flex items-center gap-2 text-sm text-gray-600">
+                                                                    <FaClock className="text-gray-400" />
+                                                                    {formatDate(
+                                                                        request.appliedDate
+                                                                    )}
+                                                                </div>
+                                                            </td>
+                                                            <td className="py-4 px-4">
+                                                                <Badge
+                                                                    className={`${
+                                                                        request.status ===
+                                                                        "accepted"
+                                                                            ? "bg-green-100 text-green-800 border-green-200"
+                                                                            : "bg-yellow-100 text-yellow-800 border-yellow-200"
+                                                                    }`}
+                                                                >
+                                                                    {request.status ===
+                                                                    "accepted" ? (
+                                                                        <>
+                                                                            <LuUserCheck className="w-3 h-3 mr-1" />{" "}
+                                                                            Accepted
+                                                                        </>
+                                                                    ) : (
+                                                                        <>
+                                                                            <FaClock className="w-3 h-3 mr-1" />{" "}
+                                                                            Pending
+                                                                        </>
+                                                                    )}
+                                                                </Badge>
+                                                            </td>
+                                                            <td className="py-4 px-4">
+                                                                <div className="flex items-center gap-2 justify-center">
+                                                                    <Button
+                                                                        size="sm"
+                                                                        variant="outline"
+                                                                        onClick={() =>
+                                                                            handleCancelRequest(
+                                                                                request.id
+                                                                            )
+                                                                        }
+                                                                        className="text-red-600 border-red-200 hover:bg-red-50"
+                                                                    >
+                                                                        <LuUserX className="w-3 h-3 mr-1" />
+                                                                        Cancel
+                                                                    </Button>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    )
+                                                )}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                ) : (
+                                    <div className="text-center py-12">
+                                        <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                            <FaHeart className="text-gray-400 text-2xl" />
+                                        </div>
+                                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                                            No applications yet
+                                        </h3>
+                                        <p className="text-gray-600 mb-6">
+                                            You haven't applied to any volunteer
+                                            opportunities yet.
+                                        </p>
+                                        <Button className="bg-green-600 hover:bg-green-700 text-white">
+                                            Browse Opportunities
+                                        </Button>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </TabsContent>
+                </Tabs>
+            </div>
+        </div>
+    );
+};
+
+export default ManageMyPost;

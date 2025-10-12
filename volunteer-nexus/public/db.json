@@ -5,8 +5,11 @@
         "location": "Peace Haven Retirement Home, City Center",
         "category": "social service",
         "necessaryVolunteers": 12,
+        "interestedVolunteers": 0,
         "deadline": "2025-10-30T23:59:59Z",
-        "photoUrl": "https://thekey.brightspotcdn.com/dims4/default/e9c17dd/2147483647/strip/true/crop/5456x3069+0+284/resize/800x450!/quality/90/?url=https%3A%2F%2Fk2-prod-hca.s3.us-east-1.amazonaws.com%2Fbrightspot%2F4b%2F0f%2Fcc6608894e4a970cdce82d2aee08%2Fcompanion-caregiver.jpg"
+        "photoUrl": "https://thekey.brightspotcdn.com/dims4/default/e9c17dd/2147483647/strip/true/crop/5456x3069+0+284/resize/800x450!/quality/90/?url=https%3A%2F%2Fk2-prod-hca.s3.us-east-1.amazonaws.com%2Fbrightspot%2F4b%2F0f%2Fcc6608894e4a970cdce82d2aee08%2Fcompanion-caregiver.jpg",
+        "creatorEmail": "aref0171personal@gmail.com",
+        "creatorOrg": "Peace Haven Retirement Home"
     },
     {
         "postTitle": "Community Health Screening Assistant",
@@ -14,8 +17,11 @@
         "location": "Northside Community Center, Auditorium",
         "category": "healthcare",
         "necessaryVolunteers": 8,
+        "interestedVolunteers": 0,
         "deadline": "2025-11-15T23:59:59Z",
-        "photoUrl": "https://img-c.udemycdn.com/course/750x422/6073251_0561.jpg"
+        "photoUrl": "https://img-c.udemycdn.com/course/750x422/6073251_0561.jpg",
+        "creatorEmail": "aref0171personal@gmail.com",
+        "creatorOrg": "Northside Community Center"
     },
     {
         "postTitle": "Tutor High School Math (Online)",
@@ -23,8 +29,11 @@
         "location": "Remote / Online Platform",
         "category": "education",
         "necessaryVolunteers": 5,
+        "interestedVolunteers": 0,
         "deadline": "2025-11-01T23:59:59Z",
-        "photoUrl": "https://www.europeanbusinessreview.com/wp-content/uploads/2022/05/Online-Math-Tutor.jpg"
+        "photoUrl": "https://www.europeanbusinessreview.com/wp-content/uploads/2022/05/Online-Math-Tutor.jpg",
+        "creatorEmail": "aref0171personal@gmail.com",
+        "creatorOrg": "City Education Foundation"
     },
     {
         "postTitle": "Shelter Dog Walkers & Playtime",
@@ -32,8 +41,11 @@
         "location": "Happy Tails Animal Shelter, Green Meadows",
         "category": "animal welfare",
         "necessaryVolunteers": 20,
+        "interestedVolunteers": 0,
         "deadline": "2025-12-31T23:59:59Z",
-        "photoUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQMXWLXlyoARaCnfcqF4bmjD6-YsT3wI6YgOg&s"
+        "photoUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQMXWLXlyoARaCnfcqF4bmjD6-YsT3wI6YgOg&s",
+        "creatorEmail": "aref0171personal@gmail.com",
+        "creatorOrg": "Happy Tails Animal Shelter"
     },
     {
         "postTitle": "Youth Robotics Workshop Mentor",
@@ -41,8 +53,11 @@
         "location": "Tech Innovations Lab, University Campus",
         "category": "education",
         "necessaryVolunteers": 7,
+        "interestedVolunteers": 0,
         "deadline": "2025-10-15T23:59:59Z",
-        "photoUrl": "https://brightchamps.com/blog/wp-content/uploads/2023/05/shutterstock_600587630.webp"
+        "photoUrl": "https://brightchamps.com/blog/wp-content/uploads/2023/05/shutterstock_600587630.webp",
+        "creatorEmail": "aref0171personal@gmail.com",
+        "creatorOrg": "Tech Innovations Lab"
     },
     {
         "postTitle": "Disaster Relief Kit Assembly",
@@ -50,7 +65,10 @@
         "location": "Central Warehouse Storage Facility, Industrial Area",
         "category": "social service",
         "necessaryVolunteers": 15,
+        "interestedVolunteers": 0,
         "deadline": "2025-10-25T23:59:59Z",
-        "photoUrl": "https://media.istockphoto.com/id/1185479001/photo/emergency-bag-for-earthquake.jpg?s=612x612&w=0&k=20&c=SYskuLfuwj4u5zr1nDQXttjvb-O8aFwkysMn95ml46g="
+        "photoUrl": "https://media.istockphoto.com/id/1185479001/photo/emergency-bag-for-earthquake.jpg?s=612x612&w=0&k=20&c=SYskuLfuwj4u5zr1nDQXttjvb-O8aFwkysMn95ml46g=",
+        "creatorEmail": "aref0171personal@gmail.com",
+        "creatorOrg": "Disaster Relief Foundation"
     }
 ]

@@ -19,7 +19,7 @@ const VolunteerNeedNow = () => {
         setError(null);
 
         axios
-            .get(`${import.meta.env.VITE_SERVER_URL}/volunteers/active`)
+            .get(`${import.meta.env.VITE_SERVER_URL}/volunteers/active-posts`)
             .then((res) => {
                 setVolunteerHuntingPost(res.data);
                 setLoading(false);
