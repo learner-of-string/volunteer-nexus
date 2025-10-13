@@ -10,7 +10,7 @@ import {
     NavItems,
 } from "@/components/ui/resizable-navbar";
 import { useState } from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet, Link } from "react-router-dom";
 import Footer from "@/components/Footer";
 
 const TopNavBar = () => {
@@ -39,7 +39,11 @@ const TopNavBar = () => {
                     <NavbarLogo />
                     <NavItems items={navItems} />
                     <div className="flex items-center gap-4">
-                        <NavbarButton variant="primary">Sign in</NavbarButton>
+                        <Link to={"/sign-in"}>
+                            <NavbarButton variant="primary">
+                                Sign in
+                            </NavbarButton>
+                        </Link>
                     </div>
                 </NavBody>
                 {/* Mobile Navigation */}
@@ -59,23 +63,25 @@ const TopNavBar = () => {
                         onClose={() => setIsMobileMenuOpen(false)}
                     >
                         {navItems.map((item, idx) => (
-                            <a
+                            <Link
                                 key={`mobile-link-${idx}`}
-                                href={item.link}
+                                to={item.link}
                                 onClick={() => setIsMobileMenuOpen(false)}
                                 className="relative text-neutral-600 dark:text-neutral-300"
                             >
                                 <span className="block">{item.name}</span>
-                            </a>
+                            </Link>
                         ))}
                         <div className="flex w-full flex-col gap-4">
-                            <NavbarButton
-                                onClick={() => setIsMobileMenuOpen(false)}
-                                variant="primary"
-                                className="w-full"
-                            >
-                                Sign in
-                            </NavbarButton>
+                            <Link to={"/sign-in"}>
+                                <NavbarButton
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                    variant="primary"
+                                    className="w-full"
+                                >
+                                    Sign in
+                                </NavbarButton>
+                            </Link>
                         </div>
                     </MobileNavMenu>
                 </MobileNav>

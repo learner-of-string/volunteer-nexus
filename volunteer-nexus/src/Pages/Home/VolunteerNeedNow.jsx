@@ -3,10 +3,8 @@ import { Button } from "@/components/ui/button";
 import { CometCard } from "@/components/ui/comet-card";
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { IoLocationOutline } from "react-icons/io5";
-import { SlCalender } from "react-icons/sl";
+import { FaClock, FaMapMarkerAlt, FaUsers } from "react-icons/fa";
 import { Link } from "react-router-dom";
-import { FaUsers, FaClock, FaMapMarkerAlt } from "react-icons/fa";
 import formatDate from "../../lib/formateDate";
 
 const VolunteerNeedNow = () => {
@@ -19,7 +17,7 @@ const VolunteerNeedNow = () => {
         setError(null);
 
         axios
-            .get(`${import.meta.env.VITE_SERVER_URL}/volunteers/active-posts`)
+            .get(`${import.meta.env.VITE_SERVER_URL}/active-posts`)
             .then((res) => {
                 setVolunteerHuntingPost(res.data);
                 setLoading(false);

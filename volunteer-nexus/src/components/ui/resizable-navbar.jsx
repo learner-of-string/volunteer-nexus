@@ -89,12 +89,12 @@ export const NavItems = ({ items, className, onItemClick }) => {
             )}
         >
             {items.map((item, idx) => (
-                <a
+                <Link
                     onMouseEnter={() => setHovered(idx)}
                     onClick={onItemClick}
                     className="relative px-4 py-2 text-neutral-600 dark:text-neutral-300"
                     key={`link-${idx}`}
-                    href={item.link}
+                    to={item.link}
                 >
                     {hovered === idx && (
                         <Motion.div
@@ -103,7 +103,7 @@ export const NavItems = ({ items, className, onItemClick }) => {
                         />
                     )}
                     <span className="relative z-20">{item.name}</span>
-                </a>
+                </Link>
             ))}
         </Motion.div>
     );
@@ -219,13 +219,25 @@ export const NavbarButton = ({
             "bg-gradient-to-b from-blue-500 to-blue-700 text-white shadow-[0px_2px_0px_0px_rgba(255,255,255,0.3)_inset]",
     };
 
+    if (href) {
+        return (
+            <a
+                href={href}
+                className={cn(baseStyles, variantStyles[variant], className)}
+                {...props}
+            >
+                {children}
+            </a>
+        );
+    }
+
     return (
-        <a
-            href={href || undefined}
+        <button
+            type="button"
             className={cn(baseStyles, variantStyles[variant], className)}
             {...props}
         >
             {children}
-        </a>
+        </button>
     );
 };

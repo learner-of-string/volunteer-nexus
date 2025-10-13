@@ -48,7 +48,7 @@ const ManageMyPost = () => {
         setLoading(false);
 
         axios
-            .get(`${import.meta.env.VITE_SERVER_URL}/volunteers/active`)
+            .get(`${import.meta.env.VITE_SERVER_URL}/active-posts`)
             .then((res) => {
                 console.log(res.data);
                 setMyVolunteerPosts(res.data);

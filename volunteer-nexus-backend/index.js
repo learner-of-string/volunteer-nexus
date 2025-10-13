@@ -35,7 +35,7 @@ async function run() {
         const database = client.db("volunteerNexus");
         const postCollection = database.collection("volunteerNeedPosts");
 
-        app.get("/volunteers/all-posts", async (req, res) => {
+        app.get("/all-posts", async (req, res) => {
             try {
                 const result = await postCollection.find().toArray();
                 console.log(result);
@@ -45,7 +45,7 @@ async function run() {
             }
         });
 
-        app.get("/volunteers/active-posts", async (req, res) => {
+        app.get("/active-posts", async (req, res) => {
             try {
                 const result = await postCollection
                     .aggregate([
@@ -69,7 +69,7 @@ async function run() {
             }
         });
 
-        app.get("/volunteers/post/:id", async (req, res) => {
+        app.get("/post/:id", async (req, res) => {
             try {
                 const { id } = req.params;
                 const result = await postCollection.findOne({

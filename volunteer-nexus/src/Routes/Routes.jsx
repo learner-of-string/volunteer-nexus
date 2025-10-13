@@ -5,6 +5,8 @@ import HuntingPost from "../Pages/HuntingPost";
 import ManageMyPost from "../Pages/ManageMyPost";
 import Page404 from "../Pages/Page404";
 import PostToGetVolunteer from "../Pages/PostToGetVolunteer";
+import SignIn from "../Pages/SignIn";
+import SignUp from "../Pages/SignUp";
 
 const routes = createBrowserRouter([
     {
@@ -15,6 +17,14 @@ const routes = createBrowserRouter([
             {
                 path: "/",
                 element: <Home />,
+            },
+            {
+                path: "/sign-in",
+                element: <SignIn />,
+            },
+            {
+                path: "/sign-up",
+                element: <SignUp />,
             },
             {
                 path: "/volunteer-need/:id",

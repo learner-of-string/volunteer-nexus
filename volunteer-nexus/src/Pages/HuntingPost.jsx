@@ -21,7 +21,7 @@ const HuntingPost = () => {
         setError(null);
 
         axios
-            .get(`${import.meta.env.VITE_SERVER_URL}/volunteers/post/${id}`)
+            .get(`${import.meta.env.VITE_SERVER_URL}/post/${id}`)
             .then((res) => {
                 setCurrentPost(res.data);
                 console.log(res.data);
