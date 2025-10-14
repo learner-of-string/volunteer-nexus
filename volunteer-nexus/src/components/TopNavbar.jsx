@@ -46,7 +46,7 @@ const TopNavBar = () => {
                             <img
                                 src={user?.photoURL}
                                 alt={user?.displayName}
-                                // referrerPolicy="no-referrer"
+                                referrerPolicy="no-referrer"
                                 className="object-cover size-10 rounded-full"
                             />
                         ) : (
