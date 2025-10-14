@@ -2,24 +2,67 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { FcGoogle } from "react-icons/fc";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { FiEye, FiEyeOff } from "react-icons/fi";
 import useAuth from "../hooks/useAuth";
+import { toast } from "sonner";
+import CustomToast from "../components/CustomToast";
 
 const SignIn = () => {
     const [showPassword, setShowPassword] = useState(false);
 
-    const { signInWithManualEmailAndPass, signInWithGoogle, signOutUser } =
-        useAuth();
+    const { signInWithManualEmailAndPass, signInWithGoogle } = useAuth();
+
+    const navigate = useNavigate();
 
     const handleSignInWithEmailAndPass = (e) => {
         e.preventDefault();
-        // integrate with your auth flow here
+        const formData = new FormData(e.currentTarget);
+        const email = formData.get("email");
+        const password = formData.get("password");
+        signInWithManualEmailAndPass(email, password)
+            .then(() => {
+                navigate("/");
+                toast.custom((t) => (
+                    <CustomToast
+                        type="success"
+                        onClose={() => toast.dismiss(t)}
+                    >
+                        Signed in successfully!
+                    </CustomToast>
+                ));
+            })
+            .catch((err) => {
+                toast.custom((t) => (
+                    <CustomToast type="error" onClose={() => toast.dismiss(t)}>
+                        {err?.message || "Failed to sign in. Please try again."}
+                    </CustomToast>
+                ));
+            });
     };
 
-    const handleGoogle = () => {
-        // integrate with Google auth here
+    const handleGoogleSignIn = () => {
+        signInWithGoogle()
+            .then((res) => {
+                console.log(res.user);
+                navigate("/");
+                toast.custom((t) => (
+                    <CustomToast
+                        type="success"
+                        onClose={() => toast.dismiss(t)}
+                    >
+                        Signed in successfully!
+                    </CustomToast>
+                ));
+            })
+            .catch((err) => {
+                toast.custom((t) => (
+                    <CustomToast type="error" onClose={() => toast.dismiss(t)}>
+                        {err?.message || "Sign-in failed. Please try again."}
+                    </CustomToast>
+                ));
+            });
     };
 
     return (
@@ -114,7 +157,7 @@ const SignIn = () => {
                         type="button"
                         variant="outline"
                         className="w-full border-gray-300 text-gray-700 hover:bg-gray-100 dark:border-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-800 cursor-pointer"
-                        onClick={handleGoogle}
+                        onClick={handleGoogleSignIn}
                     >
                         <FcGoogle className="mr-1.5 text-lg" />
                         Continue with Google

@@ -12,8 +12,11 @@ import {
 import { useState } from "react";
 import { Outlet, Link } from "react-router-dom";
 import Footer from "@/components/Footer";
+import useAuth from "../hooks/useAuth";
 
 const TopNavBar = () => {
+    const { user } = useAuth();
+
     const navItems = [
         {
             name: "Home",
@@ -39,11 +42,20 @@ const TopNavBar = () => {
                     <NavbarLogo />
                     <NavItems items={navItems} />
                     <div className="flex items-center gap-4">
-                        <Link to={"/sign-in"}>
-                            <NavbarButton variant="primary">
-                                Sign in
-                            </NavbarButton>
-                        </Link>
+                        {user ? (
+                            <img
+                                src={user?.photoURL}
+                                alt={user?.displayName}
+                                // referrerPolicy="no-referrer"
+                                className="object-cover size-10 rounded-full"
+                            />
+                        ) : (
+                            <Link to={"/sign-in"}>
+                                <NavbarButton variant="primary">
+                                    Sign in
+                                </NavbarButton>
+                            </Link>
+                        )}
                     </div>
                 </NavBody>
                 {/* Mobile Navigation */}

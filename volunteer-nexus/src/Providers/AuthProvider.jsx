@@ -32,14 +32,14 @@ const AuthProvider = ({ children }) => {
         return signOut(auth);
     };
 
-    const authInfo = [
+    const authInfo = {
         user,
         setUser,
         userLoading,
         signInWithManualEmailAndPass,
         signInWithGoogle,
         signOutUser,
-    ];
+    };
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (currentUser) => {

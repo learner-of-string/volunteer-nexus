@@ -8,7 +8,23 @@ const useAuth = () => {
         throw new Error("useAuth must be used within an AuthProvider");
     }
 
-    return context;
+    const {
+        user,
+        setUser,
+        userLoading,
+        signInWithManualEmailAndPass,
+        signInWithGoogle,
+        signOutUser,
+    } = context;
+
+    return {
+        user,
+        setUser,
+        userLoading,
+        signInWithManualEmailAndPass,
+        signInWithGoogle,
+        signOutUser,
+    };
 };
 
 export default useAuth;
