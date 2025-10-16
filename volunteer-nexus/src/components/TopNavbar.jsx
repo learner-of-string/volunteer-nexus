@@ -65,6 +65,7 @@ const TopNavBar = () => {
                     <NavItems items={navItems} />
                     <div className="flex items-center gap-4">
                         {user ? (
+                            // TODO: Dropdown is not working; fix it
                             <div
                                 onMouseEnter={() => {
                                     if (closeTimer.current) {
