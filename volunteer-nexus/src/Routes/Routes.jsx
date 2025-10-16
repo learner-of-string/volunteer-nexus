@@ -7,6 +7,7 @@ import Page404 from "../Pages/Page404";
 import PostToGetVolunteer from "../Pages/PostToGetVolunteer";
 import SignIn from "../Pages/SignIn";
 import SignUp from "../Pages/SignUp";
+import PrivateRoute from "./PrivateRoute";
 
 const routes = createBrowserRouter([
     {
@@ -28,7 +29,11 @@ const routes = createBrowserRouter([
             },
             {
                 path: "/volunteer-need/:id",
-                element: <HuntingPost />,
+                element: (
+                    <PrivateRoute>
+                        <HuntingPost />
+                    </PrivateRoute>
+                ),
             },
             {
                 path: "/volunteer/add-post",

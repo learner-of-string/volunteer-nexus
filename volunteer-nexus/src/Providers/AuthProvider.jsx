@@ -5,6 +5,8 @@ import {
     signInWithEmailAndPassword,
     signInWithPopup,
     signOut,
+    createUserWithEmailAndPassword,
+    updateProfile,
 } from "firebase/auth";
 import React, { useEffect, useState } from "react";
 import AuthContext from "../contexts/AuthContext";
@@ -22,6 +24,23 @@ const AuthProvider = ({ children }) => {
         return signInWithEmailAndPassword(auth, email, password);
     };
 
+    const signUpWithEmailPassword = async (name, photoURL, email, password) => {
+        setUserLoading(true);
+        const cred = await createUserWithEmailAndPassword(
+            auth,
+            email,
+            password
+        );
+        // Update displayName and photoURL after account creation
+        if (auth.currentUser) {
+            await updateProfile(auth.currentUser, {
+                displayName: name,
+                photoURL,
+            });
+        }
+        return cred;
+    };
+
     const signInWithGoogle = () => {
         setUserLoading(true);
         return signInWithPopup(auth, googleProvider);
@@ -37,6 +56,7 @@ const AuthProvider = ({ children }) => {
         setUser,
         userLoading,
         signInWithManualEmailAndPass,
+        signUpWithEmailPassword,
         signInWithGoogle,
         signOutUser,
     };
@@ -45,6 +65,7 @@ const AuthProvider = ({ children }) => {
         const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
             setUser(currentUser);
             setUserLoading(false);
+            console.log(currentUser);
         });
         return unsubscribe;
     }, [auth]);

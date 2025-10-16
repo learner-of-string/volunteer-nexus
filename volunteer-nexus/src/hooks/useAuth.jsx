@@ -13,6 +13,7 @@ const useAuth = () => {
         setUser,
         userLoading,
         signInWithManualEmailAndPass,
+        signUpWithEmailPassword,
         signInWithGoogle,
         signOutUser,
     } = context;
@@ -22,6 +23,7 @@ const useAuth = () => {
         setUser,
         userLoading,
         signInWithManualEmailAndPass,
+        signUpWithEmailPassword,
         signInWithGoogle,
         signOutUser,
     };
