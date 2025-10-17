@@ -8,6 +8,7 @@ import PostToGetVolunteer from "../Pages/PostToGetVolunteer";
 import SignIn from "../Pages/SignIn";
 import SignUp from "../Pages/SignUp";
 import PrivateRoute from "./PrivateRoute";
+import PreventedRoute from "./PreventedRoute";
 
 const routes = createBrowserRouter([
     {
@@ -21,11 +22,19 @@ const routes = createBrowserRouter([
             },
             {
                 path: "/sign-in",
-                element: <SignIn />,
+                element: (
+                    <PreventedRoute>
+                        <SignIn />
+                    </PreventedRoute>
+                ),
             },
             {
                 path: "/sign-up",
-                element: <SignUp />,
+                element: (
+                    <PreventedRoute>
+                        <SignUp />
+                    </PreventedRoute>
+                ),
             },
             {
                 path: "/volunteer-need/:id",
@@ -37,15 +46,27 @@ const routes = createBrowserRouter([
             },
             {
                 path: "/volunteer/add-post",
-                element: <PostToGetVolunteer />,
+                element: (
+                    <PrivateRoute>
+                        <PostToGetVolunteer />
+                    </PrivateRoute>
+                ),
             },
             {
                 path: "/volunteer/edit-post",
-                element: <PostToGetVolunteer />,
+                element: (
+                    <PrivateRoute>
+                        <PostToGetVolunteer />
+                    </PrivateRoute>
+                ),
             },
             {
                 path: "/manage-post/me",
-                element: <ManageMyPost />,
+                element: (
+                    <PrivateRoute>
+                        <ManageMyPost />
+                    </PrivateRoute>
+                ),
             },
         ],
     },

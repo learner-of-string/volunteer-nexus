@@ -72,10 +72,55 @@ async function run() {
         app.get("/post/:id", async (req, res) => {
             try {
                 const { id } = req.params;
+                console.log("Looking for post with ID:", id);
                 const result = await postCollection.findOne({
                     _id: new ObjectId(id),
                 });
+                console.log("Found post:", result);
                 res.status(200).send(result);
+            } catch (error) {
+                console.error("Error fetching post:", error);
+                res.status(500).send(error.message);
+            }
+        });
+
+        app.get("/posts/:email", async (req, res) => {
+            try {
+                const { email } = req.params;
+                console.log("Looking for posts by email:", email);
+                const result = await postCollection
+                    .find({ creatorEmail: email })
+                    .toArray();
+                console.log("Found posts:", result);
+                res.status(200).send(result);
+            } catch (error) {
+                console.error("Error fetching posts by email:", error);
+                res.status(500).send(error.message);
+            }
+        });
+
+        app.put("/post/:id", async (req, res) => {
+            try {
+                const { id } = req.params;
+                const update = req.body || {};
+
+                // Normalize deadline to ISO string if provided as Date
+                if (update.deadline instanceof Date) {
+                    update.deadline = update.deadline.toISOString();
+                }
+
+                const result = await postCollection.updateOne(
+                    { _id: new ObjectId(id) },
+                    { $set: update }
+                );
+
+                if (result.matchedCount === 0) {
+                    return res.status(404).send("Post not found");
+                }
+                const updated = await postCollection.findOne({
+                    _id: new ObjectId(id),
+                });
+                res.status(200).send(updated);
             } catch (error) {
                 res.status(500).send(error.message);
             }

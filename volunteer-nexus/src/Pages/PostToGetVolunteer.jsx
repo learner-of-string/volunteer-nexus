@@ -21,7 +21,6 @@ import {
 import { IoAlertCircle } from "react-icons/io5";
 import { LuCheck, LuChevronDown, LuUpload } from "react-icons/lu";
 import { categoriesItem } from "../lib/categoriesItem";
-
 import { Badge } from "@/components/ui/badge";
 import {
     Popover,
@@ -29,9 +28,21 @@ import {
     PopoverTrigger,
 } from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
-import { useState } from "react";
+import axios from "axios";
+import { useEffect, useState } from "react";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 
 const PostToGetVolunteer = () => {
+    const { id } = useParams();
+    const location = useLocation();
+    const routePostId = location?.state?.postId;
+    const storedPostId =
+        typeof window !== "undefined"
+            ? sessionStorage.getItem("editPostId")
+            : null;
+    const effectiveId = id || routePostId || storedPostId || null;
+    const isEdit = Boolean(effectiveId);
+    const navigate = useNavigate();
     const [open, setOpen] = useState(false);
     const [date, setDate] = useState(null);
     const [loading, setLoading] = useState(false);
@@ -42,11 +53,11 @@ const PostToGetVolunteer = () => {
         photoUrl: "",
         category: "",
         deadline: null,
-        necessaryVolunteer: "",
+        necessaryVolunteers: "",
         location: "",
         description: "",
-        organizer: "",
-        orgEmail: "",
+        creatorOrg: "",
+        creatorEmail: "",
     });
 
     const handleInputChange = (field, value) => {
@@ -66,22 +77,62 @@ const PostToGetVolunteer = () => {
             newErrors.photoUrl = "Photo URL is required";
         if (!formData.category) newErrors.category = "Category is required";
         if (!date) newErrors.deadline = "Deadline is required";
-        if (!formData.necessaryVolunteer.trim())
+        if (!formData.necessaryVolunteers.trim())
             newErrors.necessaryVolunteer = "Number of volunteers is required";
         if (!formData.location.trim())
             newErrors.location = "Location is required";
         if (!formData.description.trim())
             newErrors.description = "Description is required";
-        if (!formData.organizer.trim())
+        if (!formData.creatorOrg.trim())
             newErrors.organizer = "Organization name is required";
-        if (!formData.orgEmail.trim())
+        if (!formData.creatorEmail.trim())
             newErrors.orgEmail = "Organization email is required";
-        else if (!/\S+@\S+\.\S+/.test(formData.orgEmail))
+        else if (!/\S+@\S+\.\S+/.test(formData.creatorEmail))
             newErrors.orgEmail = "Please enter a valid email";
 
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
+
+    // Prefill on edit mode
+    useEffect(() => {
+        if (!isEdit) return;
+        let isActive = true;
+        (async () => {
+            try {
+                const { data } = await axios.get(
+                    `${import.meta.env.VITE_SERVER_URL}/post/${effectiveId}`
+                );
+                if (!isActive) return;
+                const incomingCategory = data?.category ?? "";
+                const matchedCategory = categoriesItem.find(
+                    (c) =>
+                        c.toLowerCase() ===
+                        String(incomingCategory).toLowerCase()
+                );
+                setFormData({
+                    postTitle: data?.postTitle ?? "",
+                    photoUrl: data?.photoUrl ?? "",
+                    category: matchedCategory || incomingCategory,
+                    deadline: data?.deadline ?? null,
+                    necessaryVolunteers: String(
+                        data?.necessaryVolunteers ?? ""
+                    ),
+                    location: data?.location ?? "",
+                    description: data?.description ?? "",
+                    creatorOrg: data?.creatorOrg ?? "",
+                    creatorEmail: data?.creatorEmail ?? "",
+                });
+                setDate(data?.deadline ? new Date(data.deadline) : null);
+                if (storedPostId) sessionStorage.removeItem("editPostId");
+            } catch (e) {
+                console.error(e);
+            }
+        })();
+        return () => {
+            isActive = false;
+        };
+    }, [effectiveId, isEdit, storedPostId]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -90,24 +141,46 @@ const PostToGetVolunteer = () => {
 
         setLoading(true);
 
-        // Simulate API call
-        setTimeout(() => {
-            setLoading(false);
-            setSuccess(true);
-            // Reset form
-            setFormData({
-                postTitle: "",
-                photoUrl: "",
-                category: "",
-                deadline: null,
-                necessaryVolunteer: "",
-                location: "",
-                description: "",
-                organizer: "",
-                orgEmail: "",
+        try {
+            const payload = {
+                ...formData,
+                deadline: date ? new Date(date).toISOString() : null,
+                necessaryVolunteers: Number(formData.necessaryVolunteers || 0),
+            };
+
+            const method = isEdit ? "put" : "post";
+            const url = isEdit
+                ? `${import.meta.env.VITE_SERVER_URL}/post/${effectiveId}`
+                : `${import.meta.env.VITE_SERVER_URL}/posts`;
+
+            await axios[method](url, payload, {
+                headers: { "Content-Type": "application/json" },
             });
-            setDate(null);
-        }, 2000);
+
+            setSuccess(true);
+            if (isEdit) {
+                // Optionally navigate back or to manage page after a moment
+                setTimeout(() => navigate("/manage-post/me"), 800);
+            } else {
+                // Reset form on create
+                setFormData({
+                    postTitle: "",
+                    photoUrl: "",
+                    category: "",
+                    deadline: null,
+                    necessaryVolunteers: "",
+                    location: "",
+                    description: "",
+                    creatorOrg: "",
+                    creatorEmail: "",
+                });
+                setDate(null);
+            }
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setLoading(false);
+        }
     };
 
     if (success) {
@@ -145,7 +218,9 @@ const PostToGetVolunteer = () => {
                         <FaUsers className="text-white text-2xl" />
                     </div>
                     <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-                        Create a New Opportunity
+                        {isEdit
+                            ? "Update Opportunity"
+                            : "Create a New Opportunity"}
                     </h1>
                     <p className="text-lg text-gray-700 max-w-2xl mx-auto">
                         Fill out the form below to find passionate volunteers
@@ -258,6 +333,25 @@ const PostToGetVolunteer = () => {
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectGroup>
+                                            {formData.category &&
+                                                !categoriesItem.includes(
+                                                    formData.category
+                                                ) && (
+                                                    <SelectItem
+                                                        value={
+                                                            formData.category
+                                                        }
+                                                    >
+                                                        {String(
+                                                            formData.category
+                                                        )
+                                                            .charAt(0)
+                                                            .toUpperCase() +
+                                                            String(
+                                                                formData.category
+                                                            ).slice(1)}
+                                                    </SelectItem>
+                                                )}
                                             {categoriesItem.map((category) => (
                                                 <SelectItem
                                                     key={category}
@@ -346,10 +440,10 @@ const PostToGetVolunteer = () => {
                                     type="number"
                                     placeholder="e.g., 5"
                                     name="necessaryVolunteer"
-                                    value={formData.necessaryVolunteer}
+                                    value={formData.necessaryVolunteers}
                                     onChange={(e) =>
                                         handleInputChange(
-                                            "necessaryVolunteer",
+                                            "necessaryVolunteers",
                                             e.target.value
                                         )
                                     }
@@ -453,10 +547,10 @@ const PostToGetVolunteer = () => {
                                         type="text"
                                         placeholder="e.g., Green Earth Foundation"
                                         name="organizer"
-                                        value={formData.organizer}
+                                        value={formData.creatorOrg}
                                         onChange={(e) =>
                                             handleInputChange(
-                                                "organizer",
+                                                "creatorOrg",
                                                 e.target.value
                                             )
                                         }
@@ -486,10 +580,10 @@ const PostToGetVolunteer = () => {
                                         type="email"
                                         placeholder="e.g., contact@greenearth.org"
                                         name="orgEmail"
-                                        value={formData.orgEmail}
+                                        value={formData.creatorEmail}
                                         onChange={(e) =>
                                             handleInputChange(
-                                                "orgEmail",
+                                                "creatorEmail",
                                                 e.target.value
                                             )
                                         }
@@ -519,12 +613,16 @@ const PostToGetVolunteer = () => {
                                 {loading ? (
                                     <div className="flex items-center gap-2">
                                         <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                                        Creating Opportunity...
+                                        {isEdit
+                                            ? "Updating Opportunity..."
+                                            : "Creating Opportunity..."}
                                     </div>
                                 ) : (
                                     <div className="flex items-center gap-2 cursor-pointer">
                                         <LuCheck className="w-5 h-5" />
-                                        Create Volunteer Opportunity
+                                        {isEdit
+                                            ? "Update Volunteer Opportunity"
+                                            : "Create Volunteer Opportunity"}
                                     </div>
                                 )}
                             </Button>

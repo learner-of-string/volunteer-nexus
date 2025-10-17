@@ -1,5 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import {
@@ -14,15 +15,16 @@ import {
     FaUsers,
 } from "react-icons/fa";
 import { LuSettings, LuUserCheck, LuUserX } from "react-icons/lu";
+import { useNavigate } from "react-router-dom";
 import formatDate from "../lib/formateDate";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import useAuth from "../hooks/useAuth";
 
 const ManageMyPost = () => {
     const [myVolunteerPosts, setMyVolunteerPosts] = useState([]);
     const [myVolunteerRequests, setMyVolunteerRequests] = useState([]);
     const [loading, setLoading] = useState(true);
+    const navigate = useNavigate();
+    const { user } = useAuth();
 
     // Mock data - in real app, this would come from API
     useEffect(() => {
@@ -48,16 +50,16 @@ const ManageMyPost = () => {
         setLoading(false);
 
         axios
-            .get(`${import.meta.env.VITE_SERVER_URL}/active-posts`)
+            .get(`${import.meta.env.VITE_SERVER_URL}/posts/${user?.email}`)
             .then((res) => {
                 console.log(res.data);
                 setMyVolunteerPosts(res.data);
             });
-    }, []);
+    }, [user?.email]);
 
     const handleUpdatePost = (postId) => {
-        console.log("Update post:", postId);
-        // TODO: Implement update functionality
+        sessionStorage.setItem("editPostId", String(postId));
+        navigate("/volunteer/edit-post", { state: { postId } });
     };
 
     const handleDeletePost = (postId) => {
@@ -261,10 +263,10 @@ const ManageMyPost = () => {
                                                                         variant="outline"
                                                                         onClick={() =>
                                                                             handleUpdatePost(
-                                                                                post.id
+                                                                                post._id
                                                                             )
                                                                         }
-                                                                        className="text-blue-600 border-blue-200 hover:bg-blue-50"
+                                                                        className="text-blue-600 border-blue-200 hover:bg-blue-50 cursor-pointer"
                                                                     >
                                                                         <FaEdit className="w-3 h-3 mr-1" />
                                                                         Update

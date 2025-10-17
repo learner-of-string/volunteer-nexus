@@ -1,3 +1,12 @@
+import Footer from "@/components/Footer";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
     MobileNav,
     MobileNavHeader,
@@ -9,34 +18,26 @@ import {
     NavBody,
     NavItems,
 } from "@/components/ui/resizable-navbar";
-import { useRef, useState } from "react";
-import { Link, Outlet, useNavigate } from "react-router-dom";
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
-import Footer from "@/components/Footer";
+    ClipboardList,
+    Home,
+    LogOut,
+    PlusCircle,
+    Settings2,
+} from "lucide-react";
+import { useState } from "react";
+import { Link, Outlet } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
 
 const TopNavBar = () => {
     const { user, signOutUser } = useAuth();
-    const navigate = useNavigate();
-    const [menuOpen, setMenuOpen] = useState(false);
-    const closeTimer = useRef(null);
 
-    const applyTheme = (theme) => {
-        const root = document.documentElement;
-        if (theme === "dark") {
-            root.classList.add("dark");
-        } else {
-            root.classList.remove("dark");
+    const handleSignOut = async () => {
+        try {
+            await signOutUser();
+        } catch (err) {
+            console.error(err);
         }
-        localStorage.setItem("theme", theme);
     };
 
     const navItems = [
@@ -65,123 +66,69 @@ const TopNavBar = () => {
                     <NavItems items={navItems} />
                     <div className="flex items-center gap-4">
                         {user ? (
-                            // TODO: Dropdown is not working; fix it
-                            <div
-                                onMouseEnter={() => {
-                                    if (closeTimer.current) {
-                                        clearTimeout(closeTimer.current);
-                                        closeTimer.current = null;
-                                    }
-                                    setMenuOpen(true);
-                                }}
-                                onMouseLeave={() => {
-                                    closeTimer.current = setTimeout(() => {
-                                        setMenuOpen(false);
-                                    }, 200);
-                                }}
-                            >
-                                <DropdownMenu
-                                    open={menuOpen}
-                                    onOpenChange={setMenuOpen}
-                                >
-                                    <DropdownMenuTrigger asChild>
-                                        <button
-                                            type="button"
-                                            aria-haspopup="menu"
-                                            aria-label="User menu"
-                                            className="overflow-hidden rounded-full ring-1 ring-black/5 dark:ring-white/10"
-                                            onClick={() =>
-                                                setMenuOpen((v) => !v)
-                                            }
-                                        >
-                                            <img
-                                                src={user?.photoURL}
-                                                alt={user?.displayName}
-                                                referrerPolicy="no-referrer"
-                                                className="object-cover size-10 rounded-full"
-                                            />
-                                        </button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent
-                                        align="end"
-                                        className="w-72"
-                                        onMouseEnter={() => {
-                                            if (closeTimer.current) {
-                                                clearTimeout(
-                                                    closeTimer.current
-                                                );
-                                                closeTimer.current = null;
-                                            }
-                                        }}
-                                        onMouseLeave={() => {
-                                            closeTimer.current = setTimeout(
-                                                () => {
-                                                    setMenuOpen(false);
-                                                },
-                                                200
-                                            );
-                                        }}
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <button
+                                        aria-label="Open user menu"
+                                        className="rounded-full outline-hidden ring-0 focus-visible:ring-2 focus-visible:ring-blue-500 transition"
                                     >
-                                        <div className="flex items-center gap-3 px-2 py-1.5">
-                                            <img
-                                                src={user?.photoURL}
-                                                alt={user?.displayName}
-                                                referrerPolicy="no-referrer"
-                                                className="object-cover size-10 rounded-full"
-                                            />
-                                            <div className="min-w-0">
-                                                <p className="truncate text-sm font-semibold text-gray-900 dark:text-white">
-                                                    {user?.displayName ||
-                                                        "User"}
-                                                </p>
-                                                <p className="truncate text-xs text-gray-600 dark:text-gray-300">
-                                                    {user?.email}
-                                                </p>
-                                            </div>
+                                        <img
+                                            src={user?.photoURL}
+                                            alt={user?.displayName}
+                                            referrerPolicy="no-referrer"
+                                            className="object-cover size-10 rounded-full hover:brightness-95"
+                                        />
+                                    </button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent
+                                    align="end"
+                                    className="w-64 z-[9999]"
+                                >
+                                    <DropdownMenuLabel className="flex items-center gap-3">
+                                        <img
+                                            src={user?.photoURL}
+                                            alt={user?.displayName}
+                                            referrerPolicy="no-referrer"
+                                            className="object-cover size-8 rounded-full"
+                                        />
+                                        <div className="min-w-0">
+                                            <p className="font-semibold truncate">
+                                                {user?.displayName || "User"}
+                                            </p>
+                                            <p className="text-xs text-neutral-500 truncate">
+                                                {user?.email || "No email"}
+                                            </p>
                                         </div>
-                                        <DropdownMenuSeparator />
-                                        <DropdownMenuLabel className="text-xs text-gray-500 dark:text-gray-400">
-                                            Theme
-                                        </DropdownMenuLabel>
-                                        <DropdownMenuItem
-                                            onSelect={(e) => {
-                                                e.preventDefault();
-                                                applyTheme("light");
-                                            }}
-                                        >
-                                            Light
+                                    </DropdownMenuLabel>
+                                    <DropdownMenuSeparator />
+                                    <Link to="/">
+                                        <DropdownMenuItem>
+                                            <Home className="size-4" />
+                                            Home
                                         </DropdownMenuItem>
-                                        <DropdownMenuItem
-                                            onSelect={(e) => {
-                                                e.preventDefault();
-                                                applyTheme("dark");
-                                            }}
-                                        >
-                                            Dark
+                                    </Link>
+                                    <Link to="/volunteer/add-post">
+                                        <DropdownMenuItem>
+                                            <PlusCircle className="size-4" />
+                                            Post Opportunity
                                         </DropdownMenuItem>
-                                        <DropdownMenuSeparator />
-                                        <DropdownMenuItem
-                                            onSelect={(e) => {
-                                                e.preventDefault();
-                                                navigate("/profile");
-                                            }}
-                                        >
-                                            My profile
+                                    </Link>
+                                    <Link to="/manage-post/me">
+                                        <DropdownMenuItem>
+                                            <Settings2 className="size-4" />
+                                            Manage my posts
                                         </DropdownMenuItem>
-                                        <DropdownMenuItem
-                                            data-variant="destructive"
-                                            onSelect={(e) => {
-                                                e.preventDefault();
-                                                signOutUser()
-                                                    .then(() => navigate("/"))
-                                                    .catch(() => {});
-                                            }}
-                                        >
-                                            Sign out
-                                        </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
-                            </div>
+                                    </Link>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem
+                                        variant="destructive"
+                                        onClick={handleSignOut}
+                                    >
+                                        <LogOut className="size-4" />
+                                        Sign out
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
                         ) : (
                             <Link to={"/sign-in"}>
                                 <NavbarButton variant="primary">
@@ -207,34 +154,76 @@ const TopNavBar = () => {
                         isOpen={isMobileMenuOpen}
                         onClose={() => setIsMobileMenuOpen(false)}
                     >
-                        {navItems.map((item, idx) => (
-                            <Link
-                                key={`mobile-link-${idx}`}
-                                to={item.link}
-                                onClick={() => setIsMobileMenuOpen(false)}
-                                className="relative text-neutral-600 dark:text-neutral-300"
-                            >
-                                <span className="block">{item.name}</span>
-                            </Link>
-                        ))}
-                        <div className="flex w-full flex-col gap-4">
+                        <div className="flex w-full flex-col gap-5">
                             {user ? (
-                                <div className="flex gap-1.5 items-center">
-                                    <img
-                                        src={user?.photoURL}
-                                        alt={user?.displayName}
-                                        referrerPolicy="no-referrer"
-                                        className="object-cover size-10 rounded-full"
-                                    />
-                                    <p className="text-neutral-600 text-lg">
-                                        {user?.displayName}
-                                    </p>
+                                <div className="flex flex-col gap-4">
+                                    <div className="flex gap-3 items-center rounded-xl border p-3 bg-gray-50">
+                                        <img
+                                            src={user?.photoURL}
+                                            alt={user?.displayName}
+                                            referrerPolicy="no-referrer"
+                                            className="object-cover size-10 rounded-full"
+                                        />
+                                        <div className="min-w-0">
+                                            <p className="text-neutral-900 font-semibold truncate">
+                                                {user?.displayName || "User"}
+                                            </p>
+                                            <p className="text-neutral-600 text-sm truncate">
+                                                {user?.email || "No email"}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-1 gap-3">
+                                        <Link
+                                            to="/"
+                                            onClick={() =>
+                                                setIsMobileMenuOpen(false)
+                                            }
+                                            className="inline-flex items-center gap-3 rounded-lg border px-3 py-3 text-neutral-800 hover:bg-gray-50 active:scale-[.99] transition"
+                                        >
+                                            <Home className="size-5 text-neutral-600" />
+                                            <span className="block">Home</span>
+                                        </Link>
+                                        <Link
+                                            to="/volunteer/add-post"
+                                            onClick={() =>
+                                                setIsMobileMenuOpen(false)
+                                            }
+                                            className="inline-flex items-center gap-3 rounded-lg border px-3 py-3 text-neutral-800 hover:bg-gray-50 active:scale-[.99] transition"
+                                        >
+                                            <PlusCircle className="size-5 text-neutral-600" />
+                                            <span className="block">
+                                                Post Opportunity
+                                            </span>
+                                        </Link>
+                                        <Link
+                                            to="/manage-post/me"
+                                            onClick={() =>
+                                                setIsMobileMenuOpen(false)
+                                            }
+                                            className="inline-flex items-center gap-3 rounded-lg border px-3 py-3 text-neutral-800 hover:bg-gray-50 active:scale-[.99] transition"
+                                        >
+                                            <ClipboardList className="size-5 text-neutral-600" />
+                                            <span className="block">
+                                                Manage my posts
+                                            </span>
+                                        </Link>
+                                    </div>
+                                    <button
+                                        onClick={handleSignOut}
+                                        className="inline-flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-3 text-red-700 hover:bg-red-100 active:scale-[.99] transition text-left"
+                                    >
+                                        <LogOut className="size-4" />
+                                        Sign out
+                                    </button>
                                 </div>
                             ) : (
-                                <Link to={"/sign-in"}>
-                                    <NavbarButton variant="primary">
-                                        Sign in
-                                    </NavbarButton>
+                                <Link
+                                    to={"/sign-in"}
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                    className="inline-flex items-center justify-center rounded-lg bg-blue-600 text-white px-4 py-3 font-semibold active:scale-[.99]"
+                                >
+                                    Sign in
                                 </Link>
                             )}
                         </div>

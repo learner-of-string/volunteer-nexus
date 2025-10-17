@@ -21,7 +21,7 @@ const PrivateRoute = ({ children }) => {
     }
 
     if (!user) {
-        navigate("/");
+        navigate("/sign-in");
     }
 };
 

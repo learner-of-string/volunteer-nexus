@@ -5,4 +5,5 @@ export const categoriesItem = [
     "community",
     "animal",
     "technology",
+    "social service",
 ];
