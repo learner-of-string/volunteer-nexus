@@ -69,6 +69,33 @@ async function run() {
             }
         });
 
+        app.get("/active-posts/featured", async (req, res) => {
+            try {
+                const result = await postCollection
+                    .aggregate([
+                        {
+                            $addFields: {
+                                deadlineDate: { $toDate: "$deadline" },
+                            },
+                        },
+                        {
+                            $match: {
+                                deadlineDate: { $gte: new Date() },
+                            },
+                        },
+                        {
+                            $sample: { size: 6 },
+                        },
+                    ])
+                    .toArray();
+                console.log("Featured posts (random 6):", result);
+
+                res.status(200).send(result);
+            } catch (error) {
+                res.status(500).send(error.message);
+            }
+        });
+
         app.get("/post/:id", async (req, res) => {
             try {
                 const { id } = req.params;
@@ -121,6 +148,19 @@ async function run() {
                     _id: new ObjectId(id),
                 });
                 res.status(200).send(updated);
+            } catch (error) {
+                res.status(500).send(error.message);
+            }
+        });
+
+        app.post("/posts/new", async (req, res) => {
+            try {
+                const newPost = {
+                    ...req.body,
+                    interestedVolunteers: req.body.interestedVolunteers || 0,
+                };
+                const result = await postCollection.insertOne(newPost);
+                res.status(201).send(result);
             } catch (error) {
                 res.status(500).send(error.message);
             }

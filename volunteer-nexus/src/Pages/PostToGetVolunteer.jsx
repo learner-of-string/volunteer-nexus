@@ -31,6 +31,7 @@ import { Textarea } from "@/components/ui/textarea";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
+import useAuth from "../hooks/useAuth";
 
 const PostToGetVolunteer = () => {
     const { id } = useParams();
@@ -43,6 +44,7 @@ const PostToGetVolunteer = () => {
     const effectiveId = id || routePostId || storedPostId || null;
     const isEdit = Boolean(effectiveId);
     const navigate = useNavigate();
+    const { user } = useAuth();
     const [open, setOpen] = useState(false);
     const [date, setDate] = useState(null);
     const [loading, setLoading] = useState(false);
@@ -56,11 +58,28 @@ const PostToGetVolunteer = () => {
         necessaryVolunteers: "",
         location: "",
         description: "",
-        creatorOrg: "",
-        creatorEmail: "",
+        creatorOrg: user?.displayName || "",
+        creatorEmail: user?.email || "",
+        interestedVolunteers: 0,
     });
 
+    // Update organization fields when user changes
+    useEffect(() => {
+        if (user && !isEdit) {
+            setFormData((prev) => ({
+                ...prev,
+                creatorOrg: user.displayName || "",
+                creatorEmail: user.email || "",
+                interestedVolunteers: 0,
+            }));
+        }
+    }, [user, isEdit]);
+
     const handleInputChange = (field, value) => {
+        // Prevent editing organization fields only when creating new posts
+        if (!isEdit && (field === "creatorOrg" || field === "creatorEmail")) {
+            return;
+        }
         setFormData((prev) => ({ ...prev, [field]: value }));
         // Clear error when user starts typing
         if (errors[field]) {
@@ -83,12 +102,11 @@ const PostToGetVolunteer = () => {
             newErrors.location = "Location is required";
         if (!formData.description.trim())
             newErrors.description = "Description is required";
-        if (!formData.creatorOrg.trim())
-            newErrors.organizer = "Organization name is required";
-        if (!formData.creatorEmail.trim())
-            newErrors.orgEmail = "Organization email is required";
-        else if (!/\S+@\S+\.\S+/.test(formData.creatorEmail))
-            newErrors.orgEmail = "Please enter a valid email";
+
+        // Organization fields are auto-populated from user data, so no validation needed
+        if (!user) {
+            newErrors.organizer = "Please sign in to create a post";
+        }
 
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
@@ -122,6 +140,7 @@ const PostToGetVolunteer = () => {
                     description: data?.description ?? "",
                     creatorOrg: data?.creatorOrg ?? "",
                     creatorEmail: data?.creatorEmail ?? "",
+                    interestedVolunteers: data?.interestedVolunteers ?? 0,
                 });
                 setDate(data?.deadline ? new Date(data.deadline) : null);
                 if (storedPostId) sessionStorage.removeItem("editPostId");
@@ -151,7 +170,7 @@ const PostToGetVolunteer = () => {
             const method = isEdit ? "put" : "post";
             const url = isEdit
                 ? `${import.meta.env.VITE_SERVER_URL}/post/${effectiveId}`
-                : `${import.meta.env.VITE_SERVER_URL}/posts`;
+                : `${import.meta.env.VITE_SERVER_URL}/posts/new`;
 
             await axios[method](url, payload, {
                 headers: { "Content-Type": "application/json" },
@@ -173,6 +192,7 @@ const PostToGetVolunteer = () => {
                     description: "",
                     creatorOrg: "",
                     creatorEmail: "",
+                    interestedVolunteers: 0,
                 });
                 setDate(null);
             }
@@ -182,6 +202,32 @@ const PostToGetVolunteer = () => {
             setLoading(false);
         }
     };
+
+    // Show sign-in prompt if user is not authenticated
+    if (!user && !isEdit) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-red-50 to-orange-50 flex items-center justify-center px-4">
+                <div className="max-w-md w-full bg-white rounded-2xl p-8 text-center shadow-xl border border-red-100">
+                    <div className="w-16 h-16 bg-gradient-to-br from-red-500 to-red-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+                        <IoAlertCircle className="text-white text-2xl" />
+                    </div>
+                    <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                        Sign In Required
+                    </h2>
+                    <p className="text-gray-700 mb-6">
+                        You need to be signed in to create a volunteer
+                        opportunity post. Please sign in to continue.
+                    </p>
+                    <Button
+                        onClick={() => navigate("/sign-in")}
+                        className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
+                    >
+                        Sign In
+                    </Button>
+                </div>
+            </div>
+        );
+    }
 
     if (success) {
         return (
@@ -198,12 +244,21 @@ const PostToGetVolunteer = () => {
                         Volunteers will be able to see and apply for your
                         opportunity.
                     </p>
-                    <Button
-                        onClick={() => setSuccess(false)}
-                        className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
-                    >
-                        Post Another Opportunity
-                    </Button>
+                    <div className="space-y-3">
+                        <Button
+                            onClick={() => setSuccess(false)}
+                            className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
+                        >
+                            Post Another Opportunity
+                        </Button>
+                        <Button
+                            onClick={() => navigate("/")}
+                            variant="outline"
+                            className="w-full border-gray-300 text-gray-700 hover:bg-gray-50 font-semibold rounded-xl shadow-sm hover:shadow-md transition-all duration-200"
+                        >
+                            Go to Home
+                        </Button>
+                    </div>
                 </div>
             </div>
         );
@@ -532,6 +587,9 @@ const PostToGetVolunteer = () => {
                             <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
                                 <FaBuilding className="text-blue-600" />
                                 Organization Details
+                                <Badge variant="secondary" className="text-xs">
+                                    Auto-filled from your account
+                                </Badge>
                             </h3>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -554,7 +612,8 @@ const PostToGetVolunteer = () => {
                                                 e.target.value
                                             )
                                         }
-                                        className={`h-12 ${
+                                        readOnly={true}
+                                        className={`h-12 bg-gray-50 cursor-not-allowed ${
                                             errors.organizer
                                                 ? "border-red-500 focus:border-red-500"
                                                 : ""
@@ -587,7 +646,8 @@ const PostToGetVolunteer = () => {
                                                 e.target.value
                                             )
                                         }
-                                        className={`h-12 ${
+                                        readOnly={true}
+                                        className={`h-12 bg-gray-50 cursor-not-allowed ${
                                             errors.orgEmail
                                                 ? "border-red-500 focus:border-red-500"
                                                 : ""

@@ -46,8 +46,8 @@ const TopNavBar = () => {
             link: "/",
         },
         {
-            name: "Post Opportunity",
-            link: "/volunteer/add-post",
+            name: "All Posts",
+            link: "/all-posts",
         },
         {
             name: "Manage My Posts",

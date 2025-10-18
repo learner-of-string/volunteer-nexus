@@ -2,10 +2,17 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import { FaClock, FaMapMarkerAlt, FaUser, FaUsers } from "react-icons/fa";
+import {
+    FaClock,
+    FaMapMarkerAlt,
+    FaUser,
+    FaUsers,
+    FaEdit,
+} from "react-icons/fa";
 import { IoArrowBack } from "react-icons/io5";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import formatDate from "../lib/formateDate";
+import useAuth from "../hooks/useAuth";
 
 const HuntingPost = () => {
     const [currentPost, setCurrentPost] = useState(null);
@@ -13,6 +20,12 @@ const HuntingPost = () => {
     const [error, setError] = useState(null);
 
     const { id } = useParams();
+    const { user } = useAuth();
+    const navigate = useNavigate();
+
+    // Check if current user is the creator of this post
+    const isCreator =
+        user && currentPost && user.email === currentPost.creatorEmail;
 
     useEffect(() => {
         if (!id) return;
@@ -32,6 +45,11 @@ const HuntingPost = () => {
                 setLoading(false);
             });
     }, [id]);
+
+    const navigateToEditPost = (postId) => {
+        sessionStorage.setItem("editPostId", String(postId));
+        navigate("/volunteer/edit-post", { state: { postId } });
+    };
 
     if (loading) {
         return (
@@ -132,7 +150,7 @@ const HuntingPost = () => {
                         <span>
                             Organized by{" "}
                             <span className="font-semibold text-gray-900">
-                                {currentPost?.organizer ||
+                                {currentPost?.creatorOrg ||
                                     "Anonymous Organizer"}
                             </span>
                         </span>
@@ -182,7 +200,7 @@ const HuntingPost = () => {
                                     Volunteers
                                 </h3>
                                 <p className="text-gray-600 text-sm leading-relaxed">
-                                    {currentPost?.interestedVolunteers}{" "}
+                                    {currentPost?.interestedVolunteers || 0}{" "}
                                     volunteer
                                     {currentPost?.interestedVolunteers === 1
                                         ? ""
@@ -212,30 +230,63 @@ const HuntingPost = () => {
                 <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-6 md:p-8 shadow-sm border border-blue-100">
                     <div className="text-center">
                         <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-6">
-                            <FaUsers className="text-blue-600 text-2xl" />
+                            {isCreator ? (
+                                <FaEdit className="text-blue-600 text-2xl" />
+                            ) : (
+                                <FaUsers className="text-blue-600 text-2xl" />
+                            )}
                         </div>
                         <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                            Ready to make a difference?
+                            {isCreator
+                                ? "Manage your opportunity"
+                                : "Ready to make a difference?"}
                         </h2>
                         <p className="text-gray-600 mb-8 max-w-2xl mx-auto leading-relaxed">
-                            Join this meaningful volunteer opportunity and
-                            contribute to your community. Click below to send
-                            your application to the organizer.
+                            {isCreator
+                                ? "This is your volunteer opportunity. You can edit the details, view applications, or manage volunteers from here."
+                                : "Join this meaningful volunteer opportunity and contribute to your community. Click below to send your application to the organizer."}
                         </p>
                         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                            <Button
-                                size="lg"
-                                className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 cursor-pointer"
-                            >
-                                Apply as Volunteer
-                            </Button>
-                            <Button
-                                variant="outline"
-                                size="lg"
-                                className="px-8 py-3 text-lg font-semibold rounded-xl border-2 border-blue-200 text-blue-700 hover:bg-blue-50 transition-all duration-200 cursor-pointer"
-                            >
-                                Share Opportunity
-                            </Button>
+                            {isCreator ? (
+                                <>
+                                    <Button
+                                        size="lg"
+                                        onClick={() =>
+                                            navigateToEditPost(currentPost?._id)
+                                        }
+                                        className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 cursor-pointer"
+                                    >
+                                        <FaEdit className="mr-2" />
+                                        Edit Post
+                                    </Button>
+                                    <Button
+                                        variant="outline"
+                                        size="lg"
+                                        onClick={() =>
+                                            navigate("/manage-post/me")
+                                        }
+                                        className="px-8 py-3 text-lg font-semibold rounded-xl border-2 border-blue-200 text-blue-700 hover:bg-blue-50 transition-all duration-200 cursor-pointer"
+                                    >
+                                        Manage Posts
+                                    </Button>
+                                </>
+                            ) : (
+                                <>
+                                    <Button
+                                        size="lg"
+                                        className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 cursor-pointer"
+                                    >
+                                        Apply as Volunteer
+                                    </Button>
+                                    <Button
+                                        variant="outline"
+                                        size="lg"
+                                        className="px-8 py-3 text-lg font-semibold rounded-xl border-2 border-blue-200 text-blue-700 hover:bg-blue-50 transition-all duration-200 cursor-pointer"
+                                    >
+                                        Share Opportunity
+                                    </Button>
+                                </>
+                            )}
                         </div>
                     </div>
                 </div>

@@ -269,7 +269,7 @@ const ManageMyPost = () => {
                                                                         className="text-blue-600 border-blue-200 hover:bg-blue-50 cursor-pointer"
                                                                     >
                                                                         <FaEdit className="w-3 h-3 mr-1" />
-                                                                        Update
+                                                                        Edit
                                                                     </Button>
                                                                     <Button
                                                                         size="sm"

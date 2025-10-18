@@ -4,7 +4,7 @@ import { CometCard } from "@/components/ui/comet-card";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { FaClock, FaMapMarkerAlt, FaUsers } from "react-icons/fa";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import formatDate from "../../lib/formateDate";
 
 const VolunteerNeedNow = () => {
@@ -12,12 +12,14 @@ const VolunteerNeedNow = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
+    const navigate = useNavigate();
+
     useEffect(() => {
         setLoading(true);
         setError(null);
 
         axios
-            .get(`${import.meta.env.VITE_SERVER_URL}/active-posts`)
+            .get(`${import.meta.env.VITE_SERVER_URL}/active-posts/featured`)
             .then((res) => {
                 setVolunteerHuntingPost(res.data);
                 setLoading(false);
@@ -89,15 +91,17 @@ const VolunteerNeedNow = () => {
                     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col h-full group">
                         {/* Image Section */}
                         <div className="relative w-full h-48 overflow-hidden rounded-t-2xl bg-gray-50">
-                            <Link to={`/volunteer-need/${post._id}`}>
-                                <img
-                                    src={post?.photoUrl}
-                                    alt={post?.postTitle}
-                                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                                    draggable="false"
-                                    loading="lazy"
-                                />
-                            </Link>
+                            <img
+                                src={post?.photoUrl}
+                                alt={post?.postTitle}
+                                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                draggable="false"
+                                loading="lazy"
+                                onClick={() =>
+                                    navigate(`/volunteer-need/${post._id}`)
+                                }
+                            />
+
                             <div className="absolute top-3 left-3">
                                 <Badge
                                     variant="secondary"
@@ -110,10 +114,13 @@ const VolunteerNeedNow = () => {
 
                         {/* Content Section */}
                         <div className="p-5 flex flex-col gap-3 flex-1">
-                            <h1 className="font-semibold tracking-tight font-headline text-lg leading-snug hover:text-blue-600 transition-colors cursor-pointer line-clamp-2">
-                                <Link to={`/volunteer-need/${post._id}`}>
-                                    {post?.postTitle}
-                                </Link>
+                            <h1
+                                onClick={() =>
+                                    navigate(`/volunteer-need/${post._id}`)
+                                }
+                                className="font-semibold tracking-tight font-headline text-lg leading-snug hover:text-blue-600 transition-colors cursor-pointer line-clamp-2"
+                            >
+                                {post?.postTitle}
                             </h1>
 
                             {/* Info Icons */}
@@ -132,20 +139,23 @@ const VolunteerNeedNow = () => {
                                 </div>
                                 <div className="flex items-center gap-2 text-sm text-gray-600">
                                     <FaUsers className="text-green-500 flex-shrink-0" />
-                                    <span>0 volunteers applied</span>
+                                    <span>
+                                        {post?.interestedVolunteers} volunteers
+                                        applied
+                                    </span>
                                 </div>
                             </div>
 
                             {/* CTA Button */}
                             <div className="pt-3 mt-auto">
-                                <Link
-                                    to={`/volunteer-need/${post._id}`}
-                                    className="block"
+                                <Button
+                                    onClick={() =>
+                                        navigate(`/volunteer-need/${post._id}`)
+                                    }
+                                    className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-all duration-200 hover:shadow-md block cursor-pointer"
                                 >
-                                    <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-all duration-200 hover:shadow-md">
-                                        View Details
-                                    </Button>
-                                </Link>
+                                    View Details
+                                </Button>
                             </div>
                         </div>
                     </div>

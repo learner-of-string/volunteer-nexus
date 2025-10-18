@@ -9,6 +9,7 @@ import SignIn from "../Pages/SignIn";
 import SignUp from "../Pages/SignUp";
 import PrivateRoute from "./PrivateRoute";
 import PreventedRoute from "./PreventedRoute";
+import AllPost from "../Pages/AllPost";
 
 const routes = createBrowserRouter([
     {
@@ -67,6 +68,10 @@ const routes = createBrowserRouter([
                         <ManageMyPost />
                     </PrivateRoute>
                 ),
+            },
+            {
+                path: "/all-posts",
+                element: <AllPost />,
             },
         ],
     },
