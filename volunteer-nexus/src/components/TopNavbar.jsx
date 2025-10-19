@@ -26,11 +26,12 @@ import {
     Settings2,
 } from "lucide-react";
 import { useState } from "react";
-import { Link, Outlet } from "react-router-dom";
+import { Link, Outlet, useLocation } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
 
 const TopNavBar = () => {
     const { user, signOutUser } = useAuth();
+    const location = useLocation();
 
     const handleSignOut = async () => {
         try {
@@ -55,6 +56,14 @@ const TopNavBar = () => {
         },
     ];
 
+    // Helper function to check if a route is active
+    const isActiveRoute = (path) => {
+        if (path === "/") {
+            return location.pathname === "/";
+        }
+        return location.pathname.startsWith(path);
+    };
+
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     return (
@@ -63,7 +72,7 @@ const TopNavBar = () => {
                 {/* Desktop Navigation */}
                 <NavBody>
                     <NavbarLogo />
-                    <NavItems items={navItems} />
+                    <NavItems items={navItems} isActiveRoute={isActiveRoute} />
                     <div className="flex items-center gap-4">
                         {user ? (
                             <DropdownMenu>
@@ -102,19 +111,39 @@ const TopNavBar = () => {
                                     </DropdownMenuLabel>
                                     <DropdownMenuSeparator />
                                     <Link to="/">
-                                        <DropdownMenuItem>
+                                        <DropdownMenuItem
+                                            className={
+                                                isActiveRoute("/")
+                                                    ? "bg-blue-50 text-blue-700"
+                                                    : ""
+                                            }
+                                        >
                                             <Home className="size-4" />
                                             Home
                                         </DropdownMenuItem>
                                     </Link>
                                     <Link to="/volunteer/add-post">
-                                        <DropdownMenuItem>
+                                        <DropdownMenuItem
+                                            className={
+                                                isActiveRoute(
+                                                    "/volunteer/add-post"
+                                                )
+                                                    ? "bg-blue-50 text-blue-700"
+                                                    : ""
+                                            }
+                                        >
                                             <PlusCircle className="size-4" />
                                             Post Opportunity
                                         </DropdownMenuItem>
                                     </Link>
                                     <Link to="/manage-post/me">
-                                        <DropdownMenuItem>
+                                        <DropdownMenuItem
+                                            className={
+                                                isActiveRoute("/manage-post/me")
+                                                    ? "bg-blue-50 text-blue-700"
+                                                    : ""
+                                            }
+                                        >
                                             <Settings2 className="size-4" />
                                             Manage my posts
                                         </DropdownMenuItem>
@@ -179,9 +208,19 @@ const TopNavBar = () => {
                                             onClick={() =>
                                                 setIsMobileMenuOpen(false)
                                             }
-                                            className="inline-flex items-center gap-3 rounded-lg border px-3 py-3 text-neutral-800 hover:bg-gray-50 active:scale-[.99] transition"
+                                            className={`inline-flex items-center gap-3 rounded-lg border px-3 py-3 active:scale-[.99] transition ${
+                                                isActiveRoute("/")
+                                                    ? "bg-blue-50 border-blue-200 text-blue-700"
+                                                    : "text-neutral-800 hover:bg-gray-50"
+                                            }`}
                                         >
-                                            <Home className="size-5 text-neutral-600" />
+                                            <Home
+                                                className={`size-5 ${
+                                                    isActiveRoute("/")
+                                                        ? "text-blue-600"
+                                                        : "text-neutral-600"
+                                                }`}
+                                            />
                                             <span className="block">Home</span>
                                         </Link>
                                         <Link
@@ -189,9 +228,23 @@ const TopNavBar = () => {
                                             onClick={() =>
                                                 setIsMobileMenuOpen(false)
                                             }
-                                            className="inline-flex items-center gap-3 rounded-lg border px-3 py-3 text-neutral-800 hover:bg-gray-50 active:scale-[.99] transition"
+                                            className={`inline-flex items-center gap-3 rounded-lg border px-3 py-3 active:scale-[.99] transition ${
+                                                isActiveRoute(
+                                                    "/volunteer/add-post"
+                                                )
+                                                    ? "bg-blue-50 border-blue-200 text-blue-700"
+                                                    : "text-neutral-800 hover:bg-gray-50"
+                                            }`}
                                         >
-                                            <PlusCircle className="size-5 text-neutral-600" />
+                                            <PlusCircle
+                                                className={`size-5 ${
+                                                    isActiveRoute(
+                                                        "/volunteer/add-post"
+                                                    )
+                                                        ? "text-blue-600"
+                                                        : "text-neutral-600"
+                                                }`}
+                                            />
                                             <span className="block">
                                                 Post Opportunity
                                             </span>
@@ -201,9 +254,21 @@ const TopNavBar = () => {
                                             onClick={() =>
                                                 setIsMobileMenuOpen(false)
                                             }
-                                            className="inline-flex items-center gap-3 rounded-lg border px-3 py-3 text-neutral-800 hover:bg-gray-50 active:scale-[.99] transition"
+                                            className={`inline-flex items-center gap-3 rounded-lg border px-3 py-3 active:scale-[.99] transition ${
+                                                isActiveRoute("/manage-post/me")
+                                                    ? "bg-blue-50 border-blue-200 text-blue-700"
+                                                    : "text-neutral-800 hover:bg-gray-50"
+                                            }`}
                                         >
-                                            <ClipboardList className="size-5 text-neutral-600" />
+                                            <ClipboardList
+                                                className={`size-5 ${
+                                                    isActiveRoute(
+                                                        "/manage-post/me"
+                                                    )
+                                                        ? "text-blue-600"
+                                                        : "text-neutral-600"
+                                                }`}
+                                            />
                                             <span className="block">
                                                 Manage my posts
                                             </span>

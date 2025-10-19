@@ -77,7 +77,7 @@ export const NavBody = ({ children, className, visible, solid }) => {
     );
 };
 
-export const NavItems = ({ items, className, onItemClick }) => {
+export const NavItems = ({ items, className, onItemClick, isActiveRoute }) => {
     const [hovered, setHovered] = useState(null);
 
     return (
@@ -88,23 +88,39 @@ export const NavItems = ({ items, className, onItemClick }) => {
                 className
             )}
         >
-            {items.map((item, idx) => (
-                <Link
-                    onMouseEnter={() => setHovered(idx)}
-                    onClick={onItemClick}
-                    className="relative px-4 py-2 text-neutral-600 dark:text-neutral-300 pointer-events-auto"
-                    key={`link-${idx}`}
-                    to={item.link}
-                >
-                    {hovered === idx && (
-                        <Motion.div
-                            layoutId="hovered"
-                            className="absolute inset-0 h-full w-full rounded-full bg-gray-100 dark:bg-neutral-800"
-                        />
-                    )}
-                    <span className="relative z-20">{item.name}</span>
-                </Link>
-            ))}
+            {items.map((item, idx) => {
+                const isActive = isActiveRoute
+                    ? isActiveRoute(item.link)
+                    : false;
+                return (
+                    <Link
+                        onMouseEnter={() => setHovered(idx)}
+                        onClick={onItemClick}
+                        className={cn(
+                            "relative px-4 py-2 pointer-events-auto transition-colors duration-200",
+                            isActive
+                                ? "text-blue-600 dark:text-blue-400 font-semibold"
+                                : "text-neutral-600 dark:text-neutral-300"
+                        )}
+                        key={`link-${idx}`}
+                        to={item.link}
+                    >
+                        {hovered === idx && !isActive && (
+                            <Motion.div
+                                layoutId="hovered"
+                                className="absolute inset-0 h-full w-full rounded-full bg-gray-100 dark:bg-neutral-800"
+                            />
+                        )}
+                        {isActive && (
+                            <Motion.div
+                                layoutId="active"
+                                className="absolute inset-0 h-full w-full rounded-full bg-blue-100 dark:bg-blue-900/30"
+                            />
+                        )}
+                        <span className="relative z-20">{item.name}</span>
+                    </Link>
+                );
+            })}
         </Motion.div>
     );
 };

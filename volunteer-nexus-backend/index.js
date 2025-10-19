@@ -165,6 +165,23 @@ async function run() {
                 res.status(500).send(error.message);
             }
         });
+
+        app.delete("/posts/:id", async (req, res) => {
+            try {
+                const { id } = req.params;
+                const result = await postCollection.deleteOne({
+                    _id: new ObjectId(id),
+                });
+                if (result.deletedCount === 0) {
+                    return res.status(404).send("Post not found");
+                }
+                res.status(200).send({
+                    message: "Post deleted successfully",
+                });
+            } catch (error) {
+                res.status(500).send(error.message);
+            }
+        });
     } finally {
         // Ensures that the client will close when you finish/error
         // await client.close();

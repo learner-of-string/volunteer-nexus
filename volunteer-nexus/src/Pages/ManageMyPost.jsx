@@ -13,16 +13,23 @@ import {
     FaPlus,
     FaTrash,
     FaUsers,
+    FaExclamationTriangle,
 } from "react-icons/fa";
 import { LuSettings, LuUserCheck, LuUserX } from "react-icons/lu";
 import { useNavigate } from "react-router-dom";
 import formatDate from "../lib/formateDate";
 import useAuth from "../hooks/useAuth";
+import { toast } from "sonner";
+import CustomToast from "@/components/CustomToast";
 
 const ManageMyPost = () => {
     const [myVolunteerPosts, setMyVolunteerPosts] = useState([]);
     const [myVolunteerRequests, setMyVolunteerRequests] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [deleteLoading, setDeleteLoading] = useState(false);
+    const [deleteConfirm, setDeleteConfirm] = useState(null);
+    const [error, setError] = useState(null);
+    const [success, setSuccess] = useState(null);
     const navigate = useNavigate();
     const { user } = useAuth();
 
@@ -62,9 +69,66 @@ const ManageMyPost = () => {
         navigate("/volunteer/edit-post", { state: { postId } });
     };
 
-    const handleDeletePost = (postId) => {
-        console.log("Delete post:", postId);
-        // TODO: Implement delete functionality
+    const handleDeletePost = async (postId) => {
+        try {
+            setDeleteLoading(true);
+            setError(null);
+            console.log(postId);
+
+            const response = await axios.delete(
+                `${import.meta.env.VITE_SERVER_URL}/posts/${postId}`
+            );
+
+            if (response.status === 200) {
+                // Remove the deleted post from the state
+                setMyVolunteerPosts((prevPosts) =>
+                    prevPosts.filter((post) => post._id !== postId)
+                );
+                setSuccess("Post deleted successfully!");
+                toast.custom((t) => (
+                    <CustomToast
+                        type="success"
+                        title="Post deleted"
+                        onClose={() => toast.dismiss(t)}
+                    >
+                        The post has been removed permanently.
+                    </CustomToast>
+                ));
+                setDeleteConfirm(null);
+
+                // Clear success message after 3 seconds
+                setTimeout(() => setSuccess(null), 3000);
+            }
+        } catch (err) {
+            console.error("Error deleting post:", err);
+            setError(
+                err.response?.data?.message ||
+                    "Failed to delete post. Please try again."
+            );
+            toast.custom((t) => (
+                <CustomToast
+                    type="error"
+                    title="Delete failed"
+                    onClose={() => toast.dismiss(t)}
+                >
+                    {err.response?.data?.message ||
+                        "We couldn't delete the post. Please try again."}
+                </CustomToast>
+            ));
+
+            // Clear error message after 5 seconds
+            setTimeout(() => setError(null), 5000);
+        } finally {
+            setDeleteLoading(false);
+        }
+    };
+
+    const confirmDelete = (post) => {
+        setDeleteConfirm(post);
+    };
+
+    const cancelDelete = () => {
+        setDeleteConfirm(null);
     };
 
     const handleCancelRequest = (requestId) => {
@@ -86,6 +150,49 @@ const ManageMyPost = () => {
     return (
         <div className="min-h-screen bg-gray-50">
             <div className="max-w-7xl mx-auto px-4 py-8">
+                {/* Success Message */}
+                {success && (
+                    <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg flex items-center gap-3">
+                        <div className="w-5 h-5 bg-green-100 rounded-full flex items-center justify-center">
+                            <svg
+                                className="w-3 h-3 text-green-600"
+                                fill="currentColor"
+                                viewBox="0 0 20 20"
+                            >
+                                <path
+                                    fillRule="evenodd"
+                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                    clipRule="evenodd"
+                                />
+                            </svg>
+                        </div>
+                        <span className="text-green-800 font-medium">
+                            {success}
+                        </span>
+                    </div>
+                )}
+
+                {/* Error Message */}
+                {error && (
+                    <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-3">
+                        <div className="w-5 h-5 bg-red-100 rounded-full flex items-center justify-center">
+                            <svg
+                                className="w-3 h-3 text-red-600"
+                                fill="currentColor"
+                                viewBox="0 0 20 20"
+                            >
+                                <path
+                                    fillRule="evenodd"
+                                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                                    clipRule="evenodd"
+                                />
+                            </svg>
+                        </div>
+                        <span className="text-red-800 font-medium">
+                            {error}
+                        </span>
+                    </div>
+                )}
                 {/* Header Section */}
                 <div className="text-center mb-12">
                     <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full mb-6 shadow-lg">
@@ -275,8 +382,8 @@ const ManageMyPost = () => {
                                                                         size="sm"
                                                                         variant="outline"
                                                                         onClick={() =>
-                                                                            handleDeletePost(
-                                                                                post.id
+                                                                            confirmDelete(
+                                                                                post
                                                                             )
                                                                         }
                                                                         className="text-red-600 border-red-200 hover:bg-red-50"
@@ -478,6 +585,73 @@ const ManageMyPost = () => {
                     </TabsContent>
                 </Tabs>
             </div>
+
+            {/* Delete Confirmation Dialog */}
+            {deleteConfirm && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 transform transition-all duration-300 scale-100">
+                        <div className="flex items-center gap-4 mb-6">
+                            <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                                <FaExclamationTriangle className="text-red-600 text-xl" />
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-semibold text-gray-900">
+                                    Delete Post
+                                </h3>
+                                <p className="text-sm text-gray-600">
+                                    This action cannot be undone
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="mb-6">
+                            <p className="text-gray-700 mb-2">
+                                Are you sure you want to delete this post?
+                            </p>
+                            <div className="bg-gray-50 rounded-lg p-3 border">
+                                <p className="font-medium text-gray-900">
+                                    {deleteConfirm.postTitle}
+                                </p>
+                                <p className="text-sm text-gray-600 mt-1">
+                                    {deleteConfirm.category} •{" "}
+                                    {deleteConfirm.location}
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="flex gap-3 justify-end">
+                            <Button
+                                variant="outline"
+                                onClick={cancelDelete}
+                                disabled={deleteLoading}
+                                className="px-6"
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                variant="destructive"
+                                onClick={() =>
+                                    handleDeletePost(deleteConfirm._id)
+                                }
+                                disabled={deleteLoading}
+                                className="px-6"
+                            >
+                                {deleteLoading ? (
+                                    <>
+                                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                                        Deleting...
+                                    </>
+                                ) : (
+                                    <>
+                                        <FaTrash className="w-4 h-4 mr-2" />
+                                        Delete Post
+                                    </>
+                                )}
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

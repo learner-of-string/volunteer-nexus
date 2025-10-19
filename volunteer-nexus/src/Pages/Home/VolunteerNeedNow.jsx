@@ -2,17 +2,52 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CometCard } from "@/components/ui/comet-card";
 import axios from "axios";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { FaClock, FaMapMarkerAlt, FaUsers } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 import formatDate from "../../lib/formateDate";
 
-const VolunteerNeedNow = () => {
+const VolunteerNeedNow = ({ searchTerm = "", selectedCategory = "all" }) => {
     const [volunteerHuntingPost, setVolunteerHuntingPost] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
     const navigate = useNavigate();
+
+    // Filter posts based on search term and category
+    const filteredPosts = useMemo(() => {
+        let filtered = [...volunteerHuntingPost];
+
+        // Filter by search term
+        if (searchTerm) {
+            filtered = filtered.filter(
+                (post) =>
+                    post.postTitle
+                        ?.toLowerCase()
+                        .includes(searchTerm.toLowerCase()) ||
+                    post.description
+                        ?.toLowerCase()
+                        .includes(searchTerm.toLowerCase()) ||
+                    post.location
+                        ?.toLowerCase()
+                        .includes(searchTerm.toLowerCase()) ||
+                    post.creatorOrg
+                        ?.toLowerCase()
+                        .includes(searchTerm.toLowerCase())
+            );
+        }
+
+        // Filter by category
+        if (selectedCategory !== "all") {
+            filtered = filtered.filter(
+                (post) =>
+                    post.category?.toLowerCase() ===
+                    selectedCategory.toLowerCase()
+            );
+        }
+
+        return filtered;
+    }, [volunteerHuntingPost, searchTerm, selectedCategory]);
 
     useEffect(() => {
         setLoading(true);
@@ -84,83 +119,127 @@ const VolunteerNeedNow = () => {
         );
     }
 
+    if (filteredPosts.length === 0) {
+        return (
+            <div className="container mx-auto my-6 text-center py-12">
+                <div className="text-gray-400 text-6xl mb-4">🔍</div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                    No opportunities found
+                </h3>
+                <p className="text-gray-600 mb-4">
+                    Try adjusting your search or filter criteria.
+                </p>
+                <p className="text-sm text-gray-500">
+                    Showing 0 of {volunteerHuntingPost.length} opportunities
+                </p>
+            </div>
+        );
+    }
+
     return (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 container mx-auto my-6 gap-8">
-            {volunteerHuntingPost.map((post) => (
-                <CometCard key={post._id} rotateDepth={6} translateDepth={3}>
-                    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col h-full group">
-                        {/* Image Section */}
-                        <div className="relative w-full h-48 overflow-hidden rounded-t-2xl bg-gray-50">
-                            <img
-                                src={post?.photoUrl}
-                                alt={post?.postTitle}
-                                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                                draggable="false"
-                                loading="lazy"
-                                onClick={() =>
-                                    navigate(`/volunteer-need/${post._id}`)
-                                }
-                            />
+        <div className="space-y-6">
+            {/* Results Count */}
+            <div className="container mx-auto">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div className="space-y-1">
+                        <p className="text-gray-700 font-medium">
+                            Showing {filteredPosts.length} of{" "}
+                            {volunteerHuntingPost.length} opportunities
+                        </p>
+                        {(searchTerm || selectedCategory !== "all") && (
+                            <p className="text-sm text-gray-500">
+                                Use filters above to narrow down your search
+                            </p>
+                        )}
+                    </div>
+                </div>
+            </div>
 
-                            <div className="absolute top-3 left-3">
-                                <Badge
-                                    variant="secondary"
-                                    className="bg-white/90 text-gray-900 hover:bg-white backdrop-blur-sm"
-                                >
-                                    {post?.category}
-                                </Badge>
-                            </div>
-                        </div>
-
-                        {/* Content Section */}
-                        <div className="p-5 flex flex-col gap-3 flex-1">
-                            <h1
-                                onClick={() =>
-                                    navigate(`/volunteer-need/${post._id}`)
-                                }
-                                className="font-semibold tracking-tight font-headline text-lg leading-snug hover:text-blue-600 transition-colors cursor-pointer line-clamp-2"
-                            >
-                                {post?.postTitle}
-                            </h1>
-
-                            {/* Info Icons */}
-                            <div className="space-y-2">
-                                <div className="flex items-center gap-2 text-sm text-gray-600">
-                                    <FaMapMarkerAlt className="text-blue-500 flex-shrink-0" />
-                                    <span className="truncate">
-                                        {post?.location}
-                                    </span>
-                                </div>
-                                <div className="flex items-center gap-2 text-sm text-gray-600">
-                                    <FaClock className="text-red-500 flex-shrink-0" />
-                                    <span>
-                                        Deadline: {formatDate(post?.deadline)}
-                                    </span>
-                                </div>
-                                <div className="flex items-center gap-2 text-sm text-gray-600">
-                                    <FaUsers className="text-green-500 flex-shrink-0" />
-                                    <span>
-                                        {post?.interestedVolunteers} volunteers
-                                        applied
-                                    </span>
-                                </div>
-                            </div>
-
-                            {/* CTA Button */}
-                            <div className="pt-3 mt-auto">
-                                <Button
+            {/* Posts Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 container mx-auto gap-8">
+                {filteredPosts.map((post) => (
+                    <CometCard
+                        key={post._id}
+                        rotateDepth={6}
+                        translateDepth={3}
+                    >
+                        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col h-full group">
+                            {/* Image Section */}
+                            <div className="relative w-full h-48 overflow-hidden rounded-t-2xl bg-gray-50">
+                                <img
+                                    src={post?.photoUrl}
+                                    alt={post?.postTitle}
+                                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                    draggable="false"
+                                    loading="lazy"
                                     onClick={() =>
                                         navigate(`/volunteer-need/${post._id}`)
                                     }
-                                    className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-all duration-200 hover:shadow-md block cursor-pointer"
+                                />
+
+                                <div className="absolute top-3 left-3">
+                                    <Badge
+                                        variant="secondary"
+                                        className="bg-white/90 text-gray-900 hover:bg-white backdrop-blur-sm"
+                                    >
+                                        {post?.category}
+                                    </Badge>
+                                </div>
+                            </div>
+
+                            {/* Content Section */}
+                            <div className="p-5 flex flex-col gap-3 flex-1">
+                                <h1
+                                    onClick={() =>
+                                        navigate(`/volunteer-need/${post._id}`)
+                                    }
+                                    className="font-semibold tracking-tight font-headline text-lg leading-snug hover:text-blue-600 transition-colors cursor-pointer line-clamp-2"
                                 >
-                                    View Details
-                                </Button>
+                                    {post?.postTitle}
+                                </h1>
+
+                                {/* Info Icons */}
+                                <div className="space-y-2">
+                                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                                        <FaMapMarkerAlt className="text-blue-500 flex-shrink-0" />
+                                        <span className="truncate">
+                                            {post?.location}
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                                        <FaClock className="text-red-500 flex-shrink-0" />
+                                        <span>
+                                            Deadline:{" "}
+                                            {formatDate(post?.deadline)}
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                                        <FaUsers className="text-green-500 flex-shrink-0" />
+                                        <span>
+                                            {post?.interestedVolunteers}{" "}
+                                            volunteers applied
+                                        </span>
+                                    </div>
+                                </div>
+
+                                {/* CTA Button */}
+                                <div className="pt-3 mt-auto">
+                                    <Button
+                                        onClick={() =>
+                                            navigate(
+                                                `/volunteer-need/${post._id}`
+                                            )
+                                        }
+                                        className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-all duration-200 hover:shadow-md block cursor-pointer"
+                                    >
+                                        View Details
+                                    </Button>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </CometCard>
-            ))}
+                    </CometCard>
+                ))}
+            </div>
         </div>
     );
 };
