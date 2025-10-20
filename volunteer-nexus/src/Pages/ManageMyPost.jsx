@@ -1,6 +1,13 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import {
@@ -14,9 +21,10 @@ import {
     FaTrash,
     FaUsers,
     FaExclamationTriangle,
+    FaUser,
 } from "react-icons/fa";
 import { LuSettings, LuUserCheck, LuUserX } from "react-icons/lu";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import formatDate from "../lib/formateDate";
 import useAuth from "../hooks/useAuth";
 import { toast } from "sonner";
@@ -33,34 +41,83 @@ const ManageMyPost = () => {
     const navigate = useNavigate();
     const { user } = useAuth();
 
-    // Mock data - in real app, this would come from API
+    // Status configuration for better maintainability
+    const statusConfig = {
+        pending: {
+            label: "Pending",
+            icon: FaClock,
+            color: "text-yellow-600",
+            bgColor: "bg-yellow-100",
+            borderColor: "border-yellow-200",
+            textColor: "text-yellow-800",
+        },
+        under_review: {
+            label: "Under Review",
+            icon: FaExclamationTriangle,
+            color: "text-blue-600",
+            bgColor: "bg-blue-100",
+            borderColor: "border-blue-200",
+            textColor: "text-blue-800",
+        },
+        accepted: {
+            label: "Accepted",
+            icon: LuUserCheck,
+            color: "text-green-600",
+            bgColor: "bg-green-100",
+            borderColor: "border-green-200",
+            textColor: "text-green-800",
+        },
+        waitlisted: {
+            label: "Waitlisted",
+            icon: FaClock,
+            color: "text-orange-600",
+            bgColor: "bg-orange-100",
+            borderColor: "border-orange-200",
+            textColor: "text-orange-800",
+        },
+        declined: {
+            label: "Declined",
+            icon: LuUserX,
+            color: "text-red-600",
+            bgColor: "bg-red-100",
+            borderColor: "border-red-200",
+            textColor: "text-red-800",
+        },
+    };
+
+    // Fetch user's posts and applications
     useEffect(() => {
-        setMyVolunteerRequests([
-            {
-                id: 1,
-                postTitle: "Elderly Home Companionship Drive",
-                category: "social service",
-                organizer: "Peace Haven Retirement Home",
-                appliedDate: "2025-01-15T10:30:00Z",
-                status: "pending",
-            },
-            {
-                id: 2,
-                postTitle: "Youth Robotics Workshop Mentor",
-                category: "education",
-                organizer: "Tech Innovations Lab",
-                appliedDate: "2025-01-10T14:20:00Z",
-                status: "accepted",
-            },
-        ]);
+        if (!user?.email) return;
 
-        setLoading(false);
+        setLoading(true);
 
+        // Fetch user's posts
         axios
-            .get(`${import.meta.env.VITE_SERVER_URL}/posts/${user?.email}`)
+            .get(`${import.meta.env.VITE_SERVER_URL}/posts/${user.email}`)
             .then((res) => {
-                console.log(res.data);
+                console.log("User posts:", res.data);
                 setMyVolunteerPosts(res.data);
+            })
+            .catch((err) => {
+                console.error("Error fetching posts:", err);
+                setError("Failed to load your posts");
+            });
+
+        // Fetch applications for user's posts
+        axios
+            .get(
+                `${import.meta.env.VITE_SERVER_URL}/applications/${user.email}`
+            )
+            .then((res) => {
+                console.log("Applications:", res.data);
+                setMyVolunteerRequests(res.data);
+            })
+            .catch((err) => {
+                console.error("Error fetching applications:", err);
+                setError("Failed to load applications");
+            })
+            .finally(() => {
+                setLoading(false);
             });
     }, [user?.email]);
 
@@ -131,9 +188,52 @@ const ManageMyPost = () => {
         setDeleteConfirm(null);
     };
 
-    const handleCancelRequest = (requestId) => {
-        console.log("Cancel request:", requestId);
-        // TODO: Implement cancel request functionality
+    const handleViewDetails = (applicantEmail) => {
+        const url = `/applicant/${encodeURIComponent(applicantEmail)}`;
+        window.open(url, "_blank", "noopener,noreferrer");
+    };
+
+    const handleStatusUpdate = async (requestId, newStatus) => {
+        const prev = myVolunteerRequests;
+        try {
+            // Optimistic update
+            setMyVolunteerRequests((prevRequests) =>
+                prevRequests.map((request) =>
+                    request._id === requestId
+                        ? { ...request, status: newStatus }
+                        : request
+                )
+            );
+
+            await axios.put(
+                `${import.meta.env.VITE_SERVER_URL}/applications/${requestId}`,
+                { status: newStatus }
+            );
+
+            toast.custom((t) => (
+                <CustomToast
+                    type="success"
+                    title="Status Updated"
+                    onClose={() => toast.dismiss(t)}
+                >
+                    Applicant status has been updated to {newStatus}.
+                </CustomToast>
+            ));
+        } catch (error) {
+            console.error("Error updating status:", error);
+            // Rollback
+            setMyVolunteerRequests(prev);
+            toast.custom((t) => (
+                <CustomToast
+                    type="error"
+                    title="Update Failed"
+                    onClose={() => toast.dismiss(t)}
+                >
+                    {error.response?.data?.message ||
+                        "Failed to update status. Please try again."}
+                </CustomToast>
+            ));
+        }
     };
 
     if (loading) {
@@ -318,9 +418,14 @@ const ManageMyPost = () => {
                                                         >
                                                             <td className="py-4 px-4">
                                                                 <div className="font-medium text-gray-900">
-                                                                    {
-                                                                        post.postTitle
-                                                                    }
+                                                                    <Link
+                                                                        className="hover:underline"
+                                                                        to={`/volunteer-need/${post._id}`}
+                                                                    >
+                                                                        {
+                                                                            post.postTitle
+                                                                        }
+                                                                    </Link>
                                                                 </div>
                                                             </td>
                                                             <td className="py-4 px-4">
@@ -419,6 +524,7 @@ const ManageMyPost = () => {
                             </div>
                         </div>
                     </TabsContent>
+                    {/* volunteer req section */}
                     <TabsContent
                         value="volunteerReq"
                         className="mt-0 animate-in fade-in-50 duration-300"
@@ -433,11 +539,11 @@ const ManageMyPost = () => {
                                         </div>
                                         <div>
                                             <h2 className="text-2xl font-bold text-gray-900 mb-1">
-                                                People interested to work
+                                                Applicant Management
                                             </h2>
                                             <p className="text-gray-600 text-sm">
-                                                People who responded to your
-                                                post
+                                                Manage applicants who responded
+                                                to your posts
                                             </p>
                                         </div>
                                     </div>
@@ -465,7 +571,7 @@ const ManageMyPost = () => {
                                                         Category
                                                     </th>
                                                     <th className="text-left py-3 px-4 font-semibold text-gray-900">
-                                                        Organizer
+                                                        Applicant
                                                     </th>
                                                     <th className="text-left py-3 px-4 font-semibold text-gray-900">
                                                         Applied Date
@@ -482,14 +588,19 @@ const ManageMyPost = () => {
                                                 {myVolunteerRequests.map(
                                                     (request) => (
                                                         <tr
-                                                            key={request.id}
+                                                            key={request._id}
                                                             className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
                                                         >
                                                             <td className="py-4 px-4">
                                                                 <div className="font-medium text-gray-900">
-                                                                    {
-                                                                        request.postTitle
-                                                                    }
+                                                                    <Link
+                                                                        className="hover:underline"
+                                                                        to={`/volunteer-need/${request.postId}`}
+                                                                    >
+                                                                        {
+                                                                            request.postTitle
+                                                                        }
+                                                                    </Link>
                                                                 </div>
                                                             </td>
                                                             <td className="py-4 px-4">
@@ -503,10 +614,17 @@ const ManageMyPost = () => {
                                                                 </Badge>
                                                             </td>
                                                             <td className="py-4 px-4">
-                                                                <div className="text-gray-600">
-                                                                    {
-                                                                        request.organizer
-                                                                    }
+                                                                <div>
+                                                                    <div className="font-medium text-gray-900">
+                                                                        {
+                                                                            request.applicantName
+                                                                        }
+                                                                    </div>
+                                                                    <div className="text-sm text-gray-500">
+                                                                        {
+                                                                            request.applicantEmail
+                                                                        }
+                                                                    </div>
                                                                 </div>
                                                             </td>
                                                             <td className="py-4 px-4">
@@ -518,27 +636,138 @@ const ManageMyPost = () => {
                                                                 </div>
                                                             </td>
                                                             <td className="py-4 px-4">
-                                                                <Badge
-                                                                    className={`${
-                                                                        request.status ===
-                                                                        "accepted"
-                                                                            ? "bg-green-100 text-green-800 border-green-200"
-                                                                            : "bg-yellow-100 text-yellow-800 border-yellow-200"
-                                                                    }`}
-                                                                >
-                                                                    {request.status ===
-                                                                    "accepted" ? (
-                                                                        <>
-                                                                            <LuUserCheck className="w-3 h-3 mr-1" />{" "}
-                                                                            Accepted
-                                                                        </>
-                                                                    ) : (
-                                                                        <>
-                                                                            <FaClock className="w-3 h-3 mr-1" />{" "}
-                                                                            Pending
-                                                                        </>
-                                                                    )}
-                                                                </Badge>
+                                                                {request.status ===
+                                                                    "accepted" ||
+                                                                request.status ===
+                                                                    "declined" ? (
+                                                                    <div className="inline-flex items-center gap-2 text-sm">
+                                                                        {(() => {
+                                                                            const IconComponent =
+                                                                                statusConfig[
+                                                                                    request
+                                                                                        .status
+                                                                                ]
+                                                                                    ?.icon;
+                                                                            return IconComponent ? (
+                                                                                <IconComponent
+                                                                                    className={`w-3 h-3 ${
+                                                                                        statusConfig[
+                                                                                            request
+                                                                                                .status
+                                                                                        ]
+                                                                                            ?.color
+                                                                                    }`}
+                                                                                />
+                                                                            ) : null;
+                                                                        })()}
+                                                                        <span
+                                                                            className={`${
+                                                                                statusConfig[
+                                                                                    request
+                                                                                        .status
+                                                                                ]
+                                                                                    ?.textColor ||
+                                                                                "text-gray-800"
+                                                                            }`}
+                                                                        >
+                                                                            {statusConfig[
+                                                                                request
+                                                                                    .status
+                                                                            ]
+                                                                                ?.label ||
+                                                                                request.status}
+                                                                        </span>
+                                                                    </div>
+                                                                ) : (
+                                                                    <Select
+                                                                        value={
+                                                                            request.status
+                                                                        }
+                                                                        onValueChange={(
+                                                                            value
+                                                                        ) =>
+                                                                            handleStatusUpdate(
+                                                                                request._id,
+                                                                                value
+                                                                            )
+                                                                        }
+                                                                    >
+                                                                        <SelectTrigger className="w-[180px]">
+                                                                            <SelectValue>
+                                                                                {request.status &&
+                                                                                    statusConfig[
+                                                                                        request
+                                                                                            .status
+                                                                                    ] && (
+                                                                                        <div className="flex items-center gap-2">
+                                                                                            {(() => {
+                                                                                                const IconComponent =
+                                                                                                    statusConfig[
+                                                                                                        request
+                                                                                                            .status
+                                                                                                    ]
+                                                                                                        .icon;
+                                                                                                return (
+                                                                                                    <IconComponent
+                                                                                                        className={`w-3 h-3 ${
+                                                                                                            statusConfig[
+                                                                                                                request
+                                                                                                                    .status
+                                                                                                            ]
+                                                                                                                .color
+                                                                                                        }`}
+                                                                                                    />
+                                                                                                );
+                                                                                            })()}
+                                                                                            <span>
+                                                                                                {
+                                                                                                    statusConfig[
+                                                                                                        request
+                                                                                                            .status
+                                                                                                    ]
+                                                                                                        .label
+                                                                                                }
+                                                                                            </span>
+                                                                                        </div>
+                                                                                    )}
+                                                                            </SelectValue>
+                                                                        </SelectTrigger>
+                                                                        <SelectContent>
+                                                                            {Object.entries(
+                                                                                statusConfig
+                                                                            ).map(
+                                                                                ([
+                                                                                    status,
+                                                                                    config,
+                                                                                ]) => {
+                                                                                    const IconComponent =
+                                                                                        config.icon;
+                                                                                    return (
+                                                                                        <SelectItem
+                                                                                            key={
+                                                                                                status
+                                                                                            }
+                                                                                            value={
+                                                                                                status
+                                                                                            }
+                                                                                        >
+                                                                                            <div className="flex items-center gap-2">
+                                                                                                <IconComponent
+                                                                                                    className={`w-3 h-3 ${config.color}`}
+                                                                                                />
+                                                                                                <span>
+                                                                                                    {
+                                                                                                        config.label
+                                                                                                    }
+                                                                                                </span>
+                                                                                            </div>
+                                                                                        </SelectItem>
+                                                                                    );
+                                                                                }
+                                                                            )}
+                                                                        </SelectContent>
+                                                                    </Select>
+                                                                )}
                                                             </td>
                                                             <td className="py-4 px-4">
                                                                 <div className="flex items-center gap-2 justify-center">
@@ -546,14 +775,15 @@ const ManageMyPost = () => {
                                                                         size="sm"
                                                                         variant="outline"
                                                                         onClick={() =>
-                                                                            handleCancelRequest(
-                                                                                request.id
+                                                                            handleViewDetails(
+                                                                                request.applicantEmail
                                                                             )
                                                                         }
-                                                                        className="text-red-600 border-red-200 hover:bg-red-50"
+                                                                        className="text-blue-600 border-blue-200 hover:bg-blue-50"
                                                                     >
-                                                                        <LuUserX className="w-3 h-3 mr-1" />
-                                                                        Cancel
+                                                                        <FaUser className="w-3 h-3 mr-1" />
+                                                                        View
+                                                                        Details
                                                                     </Button>
                                                                 </div>
                                                             </td>
@@ -569,14 +799,14 @@ const ManageMyPost = () => {
                                             <FaHeart className="text-gray-400 text-2xl" />
                                         </div>
                                         <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                                            No applications yet
+                                            No applicants yet
                                         </h3>
                                         <p className="text-gray-600 mb-6">
-                                            You haven't applied to any volunteer
+                                            No one has applied to your volunteer
                                             opportunities yet.
                                         </p>
                                         <Button className="bg-green-600 hover:bg-green-700 text-white">
-                                            Browse Opportunities
+                                            Create New Post
                                         </Button>
                                     </div>
                                 )}

@@ -10,6 +10,9 @@ import SignUp from "../Pages/SignUp";
 import PrivateRoute from "./PrivateRoute";
 import PreventedRoute from "./PreventedRoute";
 import AllPost from "../Pages/AllPost";
+import ApplicantDetails from "../Pages/ApplicantDetails";
+import Dashboard from "../Pages/Dashboard";
+import MyApplications from "../Pages/MyApplications";
 
 const routes = createBrowserRouter([
     {
@@ -72,6 +75,30 @@ const routes = createBrowserRouter([
             {
                 path: "/all-posts",
                 element: <AllPost />,
+            },
+            {
+                path: "/applicant/:applicantEmail",
+                element: (
+                    <PrivateRoute>
+                        <ApplicantDetails />
+                    </PrivateRoute>
+                ),
+            },
+            {
+                path: "/dashboard",
+                element: (
+                    <PrivateRoute>
+                        <Dashboard />
+                    </PrivateRoute>
+                ),
+            },
+            {
+                path: "/my-applications",
+                element: (
+                    <PrivateRoute>
+                        <MyApplications />
+                    </PrivateRoute>
+                ),
             },
         ],
     },

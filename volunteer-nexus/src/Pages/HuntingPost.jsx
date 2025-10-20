@@ -8,16 +8,22 @@ import {
     FaUser,
     FaUsers,
     FaEdit,
+    FaCheckCircle,
+    FaExclamationTriangle,
 } from "react-icons/fa";
 import { IoArrowBack } from "react-icons/io5";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import formatDate from "../lib/formateDate";
 import useAuth from "../hooks/useAuth";
+import { toast } from "sonner";
+import CustomToast from "@/components/CustomToast";
 
 const HuntingPost = () => {
     const [currentPost, setCurrentPost] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+    const [applying, setApplying] = useState(false);
 
     const { id } = useParams();
     const { user } = useAuth();
@@ -49,6 +55,83 @@ const HuntingPost = () => {
     const navigateToEditPost = (postId) => {
         sessionStorage.setItem("editPostId", String(postId));
         navigate("/volunteer/edit-post", { state: { postId } });
+    };
+
+    const handleApplyClick = () => {
+        if (!user) {
+            toast.custom((t) => (
+                <CustomToast type="error" onClose={() => toast.dismiss(t)}>
+                    Please sign in to apply for this opportunity.
+                </CustomToast>
+            ));
+            navigate("/sign-in");
+            return;
+        }
+        setShowConfirmDialog(true);
+    };
+
+    const handleConfirmApplication = async () => {
+        if (!user || !currentPost) return;
+
+        try {
+            setApplying(true);
+            await axios.post(
+                `${import.meta.env.VITE_SERVER_URL}/applications`,
+                {
+                    postId: currentPost._id,
+                    applicantEmail: user.email,
+                }
+            );
+
+            setShowConfirmDialog(false);
+            toast.custom((t) => (
+                <CustomToast type="success" onClose={() => toast.dismiss(t)}>
+                    Application submitted successfully! The organizer will
+                    review your application.
+                </CustomToast>
+            ));
+
+            // Refresh the post data to update volunteer count
+            const updatedPost = await axios.get(
+                `${import.meta.env.VITE_SERVER_URL}/post/${id}`
+            );
+            setCurrentPost(updatedPost.data);
+        } catch (error) {
+            console.error("Error submitting application:", error);
+            toast.custom((t) => (
+                <CustomToast type="error" onClose={() => toast.dismiss(t)}>
+                    {error.response?.data?.message ||
+                        "Failed to submit application. Please try again."}
+                </CustomToast>
+            ));
+        } finally {
+            setApplying(false);
+        }
+    };
+
+    const handleCancelApplication = () => {
+        setShowConfirmDialog(false);
+    };
+
+    const handleShareClick = async () => {
+        try {
+            const currentUrl = window.location.href;
+            await navigator.clipboard.writeText(currentUrl);
+
+            toast.custom((t) => (
+                <CustomToast type="success" onClose={() => toast.dismiss(t)}>
+                    Link copied to clipboard! Share this opportunity with
+                    others.
+                </CustomToast>
+            ));
+        } catch (error) {
+            console.error("Failed to copy to clipboard:", error);
+            toast.custom((t) => (
+                <CustomToast type="error" onClose={() => toast.dismiss(t)}>
+                    Failed to copy link. Please try again.
+                </CustomToast>
+            ));
+        }
     };
 
     if (loading) {
@@ -112,7 +195,7 @@ const HuntingPost = () => {
             {/* Back Button */}
             <div className="max-w-4xl mx-auto px-4 pt-6">
                 <Link
-                    to="/"
+                    to={-1}
                     className="inline-flex items-center text-gray-600 hover:text-gray-900 transition-colors"
                 >
                     <IoArrowBack className="mr-2" />
@@ -274,13 +357,18 @@ const HuntingPost = () => {
                                 <>
                                     <Button
                                         size="lg"
-                                        className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 cursor-pointer"
+                                        onClick={handleApplyClick}
+                                        disabled={applying}
+                                        className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
-                                        Apply as Volunteer
+                                        {applying
+                                            ? "Applying..."
+                                            : "Apply as Volunteer"}
                                     </Button>
                                     <Button
                                         variant="outline"
                                         size="lg"
+                                        onClick={handleShareClick}
                                         className="px-8 py-3 text-lg font-semibold rounded-xl border-2 border-blue-200 text-blue-700 hover:bg-blue-50 transition-all duration-200 cursor-pointer"
                                     >
                                         Share Opportunity
@@ -291,6 +379,80 @@ const HuntingPost = () => {
                     </div>
                 </div>
             </div>
+
+            {/* Application Confirmation Dialog */}
+            {showConfirmDialog && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 transform transition-all duration-300 scale-100">
+                        <div className="flex items-center gap-4 mb-6">
+                            <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                                <FaCheckCircle className="text-blue-600 text-xl" />
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-semibold text-gray-900">
+                                    Confirm Application
+                                </h3>
+                                <p className="text-sm text-gray-600">
+                                    You're about to apply for this volunteer
+                                    opportunity
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="mb-6">
+                            <p className="text-gray-700 mb-4">
+                                Are you sure you want to apply for this
+                                volunteer opportunity?
+                            </p>
+                            <div className="bg-gray-50 rounded-lg p-4 border">
+                                <h4 className="font-medium text-gray-900 mb-2">
+                                    {currentPost?.postTitle}
+                                </h4>
+                                <div className="flex items-center gap-4 text-sm text-gray-600">
+                                    <div className="flex items-center gap-1">
+                                        <FaMapMarkerAlt className="text-gray-400" />
+                                        <span>{currentPost?.location}</span>
+                                    </div>
+                                    <div className="flex items-center gap-1">
+                                        <FaClock className="text-gray-400" />
+                                        <span>
+                                            {formatDate(currentPost?.deadline)}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="flex gap-3 justify-end">
+                            <Button
+                                variant="outline"
+                                onClick={handleCancelApplication}
+                                disabled={applying}
+                                className="px-6"
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                onClick={handleConfirmApplication}
+                                disabled={applying}
+                                className="px-6 bg-blue-600 hover:bg-blue-700 text-white"
+                            >
+                                {applying ? (
+                                    <>
+                                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                                        Applying...
+                                    </>
+                                ) : (
+                                    <>
+                                        <FaCheckCircle className="w-4 h-4 mr-2" />
+                                        Apply Now
+                                    </>
+                                )}
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

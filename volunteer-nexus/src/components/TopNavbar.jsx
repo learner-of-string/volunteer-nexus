@@ -28,6 +28,8 @@ import {
 import { useState } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
+import { toast } from "sonner";
+import CustomToast from "./CustomToast";
 
 const TopNavBar = () => {
     const { user, signOutUser } = useAuth();
@@ -35,7 +37,16 @@ const TopNavBar = () => {
 
     const handleSignOut = async () => {
         try {
-            await signOutUser();
+            await signOutUser().then(() => {
+                toast.custom((t) => {
+                    <CustomToast
+                        type="success"
+                        onClose={() => toast.dismiss(t)}
+                    >
+                        Signed Out Successful!
+                    </CustomToast>;
+                });
+            });
         } catch (err) {
             console.error(err);
         }
@@ -51,8 +62,8 @@ const TopNavBar = () => {
             link: "/all-posts",
         },
         {
-            name: "Manage My Posts",
-            link: "/manage-post/me",
+            name: "Dashboard",
+            link: "/dashboard",
         },
     ];
 
@@ -250,7 +261,7 @@ const TopNavBar = () => {
                                             </span>
                                         </Link>
                                         <Link
-                                            to="/manage-post/me"
+                                            to="/dashboard"
                                             onClick={() =>
                                                 setIsMobileMenuOpen(false)
                                             }
@@ -270,7 +281,7 @@ const TopNavBar = () => {
                                                 }`}
                                             />
                                             <span className="block">
-                                                Manage my posts
+                                                Dashboard
                                             </span>
                                         </Link>
                                     </div>

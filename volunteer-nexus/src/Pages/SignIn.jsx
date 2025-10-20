@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import ContinueWithGoogle from "../components/ContinueWithGoogle";
 import CustomToast from "../components/CustomToast";
 import useAuth from "../hooks/useAuth";
+import axios from "axios";
 
 const SignIn = () => {
     const [showPassword, setShowPassword] = useState(false);
@@ -16,13 +17,42 @@ const SignIn = () => {
 
     const navigate = useNavigate();
 
+    const createUserInDatabase = async (userData) => {
+        try {
+            const response = await axios.post(
+                `${import.meta.env.VITE_SERVER_URL}/users`,
+                {
+                    displayName: userData.displayName,
+                    email: userData.email,
+                    photoURL: userData.photoURL || "",
+                }
+            );
+            console.log("User created in database:", response.data);
+            return response.data;
+        } catch (error) {
+            console.error("Error creating user in database:", error);
+            // Don't throw error here as Firebase auth was successful
+            // Just log the error and continue
+            return null;
+        }
+    };
+
     const handleSignInWithEmailAndPass = (e) => {
         e.preventDefault();
         const formData = new FormData(e.currentTarget);
         const email = formData.get("email");
         const password = formData.get("password");
         signInWithManualEmailAndPass(email, password)
-            .then(() => {
+            .then(async (userCredential) => {
+                // Create user in database after successful Firebase authentication
+                if (userCredential?.user) {
+                    await createUserInDatabase({
+                        displayName: userCredential.user.displayName,
+                        email: userCredential.user.email,
+                        photoURL: userCredential.user.photoURL,
+                    });
+                }
+
                 navigate("/");
                 toast.custom((t) => (
                     <CustomToast

@@ -8,6 +8,7 @@ import { FiEye, FiEyeOff } from "react-icons/fi";
 import { toast } from "sonner";
 import ContinueWithGoogle from "../components/ContinueWithGoogle";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const SignUp = () => {
     const { signUpWithEmailPassword } = useAuth();
@@ -26,6 +27,26 @@ const SignUp = () => {
     const handleChange = (e) => {
         const { name, value } = e.target;
         setForm((prev) => ({ ...prev, [name]: value }));
+    };
+
+    const createUserInDatabase = async (userData) => {
+        try {
+            const response = await axios.post(
+                `${import.meta.env.VITE_SERVER_URL}/users`,
+                {
+                    displayName: userData.displayName,
+                    email: userData.email,
+                    photoURL: userData.photoURL || "",
+                }
+            );
+            console.log("User created in database:", response.data);
+            return response.data;
+        } catch (error) {
+            console.error("Error creating user in database:", error);
+            // Don't throw error here as Firebase auth was successful
+            // Just log the error and continue
+            return null;
+        }
     };
 
     const validate = () => {
@@ -57,12 +78,22 @@ const SignUp = () => {
 
         try {
             setSubmitting(true);
-            await signUpWithEmailPassword(
+            const userCredential = await signUpWithEmailPassword(
                 form.name.trim(),
                 form.photoURL.trim(),
                 form.email.trim(),
                 form.password
             );
+
+            // Create user in database after successful Firebase authentication
+            if (userCredential?.user) {
+                await createUserInDatabase({
+                    displayName: form.name.trim(),
+                    email: form.email.trim(),
+                    photoURL: form.photoURL.trim(),
+                });
+            }
+
             navigate("/");
             toast.custom((t) => (
                 <CustomToast type="success" onClose={() => toast.dismiss(t)}>
