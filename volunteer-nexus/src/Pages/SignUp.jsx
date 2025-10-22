@@ -49,6 +49,26 @@ const SignUp = () => {
         }
     };
 
+    const getJWTToken = async (userData) => {
+        try {
+            await axios.post(
+                `${import.meta.env.VITE_SERVER_URL}/jwt`,
+                {
+                    email: userData.email,
+                    displayName: userData.displayName,
+                },
+                {
+                    withCredentials: true,
+                }
+            );
+            console.log("JWT token set in httpOnly cookie");
+            return true;
+        } catch (error) {
+            console.error("Error getting JWT token:", error);
+            return false;
+        }
+    };
+
     const validate = () => {
         const newErrors = {};
         if (!form.name.trim()) newErrors.name = "Name is required";
@@ -63,7 +83,7 @@ const SignUp = () => {
         return newErrors;
     };
 
-    const signUpWithEmail = async (e) => {
+    const signUpWithEmail = (e) => {
         e.preventDefault();
         const v = validate();
         setErrors(v);
@@ -76,40 +96,50 @@ const SignUp = () => {
             return;
         }
 
-        try {
-            setSubmitting(true);
-            const userCredential = await signUpWithEmailPassword(
-                form.name.trim(),
-                form.photoURL.trim(),
-                form.email.trim(),
-                form.password
-            );
+        setSubmitting(true);
+        signUpWithEmailPassword(
+            form.name.trim(),
+            form.photoURL.trim(),
+            form.email.trim(),
+            form.password
+        )
+            .then(async (userCredential) => {
+                // Create user in database after successful Firebase authentication
+                if (userCredential?.user) {
+                    await createUserInDatabase({
+                        displayName: form.name.trim(),
+                        email: form.email.trim(),
+                        photoURL: form.photoURL.trim(),
+                    });
 
-            // Create user in database after successful Firebase authentication
-            if (userCredential?.user) {
-                await createUserInDatabase({
-                    displayName: form.name.trim(),
-                    email: form.email.trim(),
-                    photoURL: form.photoURL.trim(),
-                });
-            }
+                    // Get JWT token (set in httpOnly cookie)
+                    await getJWTToken({
+                        email: form.email.trim(),
+                        displayName: form.name.trim(),
+                    });
+                }
 
-            navigate("/");
-            toast.custom((t) => (
-                <CustomToast type="success" onClose={() => toast.dismiss(t)}>
-                    Account created successfully.
-                </CustomToast>
-            ));
-            setForm({ name: "", email: "", photoURL: "", password: "" });
-        } catch (err) {
-            toast.custom((t) => (
-                <CustomToast type="error" onClose={() => toast.dismiss(t)}>
-                    {err?.message || "Failed to create account"}
-                </CustomToast>
-            ));
-        } finally {
-            setSubmitting(false);
-        }
+                navigate("/");
+                toast.custom((t) => (
+                    <CustomToast
+                        type="success"
+                        onClose={() => toast.dismiss(t)}
+                    >
+                        Account created successfully.
+                    </CustomToast>
+                ));
+                setForm({ name: "", email: "", photoURL: "", password: "" });
+            })
+            .catch((err) => {
+                toast.custom((t) => (
+                    <CustomToast type="error" onClose={() => toast.dismiss(t)}>
+                        {err?.message || "Failed to create account"}
+                    </CustomToast>
+                ));
+            })
+            .finally(() => {
+                setSubmitting(false);
+            });
     };
 
     return (

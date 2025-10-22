@@ -29,6 +29,7 @@ import formatDate from "../lib/formateDate";
 import useAuth from "../hooks/useAuth";
 import { toast } from "sonner";
 import CustomToast from "@/components/CustomToast";
+import useAxios from "../hooks/useAxios";
 
 const ManageMyPost = () => {
     const [myVolunteerPosts, setMyVolunteerPosts] = useState([]);
@@ -40,8 +41,8 @@ const ManageMyPost = () => {
     const [success, setSuccess] = useState(null);
     const navigate = useNavigate();
     const { user } = useAuth();
+    const axiosSecure = useAxios();
 
-    // Status configuration for better maintainability
     const statusConfig = {
         pending: {
             label: "Pending",
@@ -92,8 +93,8 @@ const ManageMyPost = () => {
         setLoading(true);
 
         // Fetch user's posts
-        axios
-            .get(`${import.meta.env.VITE_SERVER_URL}/posts/${user.email}`)
+        axiosSecure
+            .get(`/posts/${user.email}`)
             .then((res) => {
                 console.log("User posts:", res.data);
                 setMyVolunteerPosts(res.data);
@@ -119,7 +120,7 @@ const ManageMyPost = () => {
             .finally(() => {
                 setLoading(false);
             });
-    }, [user?.email]);
+    }, [user?.email, axiosSecure]);
 
     const handleUpdatePost = (postId) => {
         sessionStorage.setItem("editPostId", String(postId));

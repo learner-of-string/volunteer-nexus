@@ -1,6 +1,7 @@
+import useAuth from "@/hooks/useAuth";
+import axios from "axios";
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
-import useAuth from "@/hooks/useAuth";
 import { toast } from "sonner";
 import CustomToast from "../components/CustomToast";
 
@@ -10,12 +11,21 @@ const Dashboard = () => {
 
     const handleSignOut = async () => {
         await signOutUser().then(() => {
+            axios
+                .post(
+                    `${import.meta.env.VITE_SERVER_URL}/signout`,
+                    {},
+                    { withCredentials: true }
+                )
+                .then((res) => {
+                    console.log(res.data);
+                    navigate("/");
+                });
             toast.custom((t) => (
                 <CustomToast type="success" onClose={() => toast.dismiss(t)}>
-                    Signed Out Successful!
+                    Signed Out Successfully!
                 </CustomToast>
             ));
-            navigate("/");
         });
     };
 

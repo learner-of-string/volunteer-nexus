@@ -1,22 +1,22 @@
+import CustomToast from "@/components/CustomToast";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import {
+    FaCheckCircle,
     FaClock,
+    FaEdit,
     FaMapMarkerAlt,
     FaUser,
     FaUsers,
-    FaEdit,
-    FaCheckCircle,
-    FaExclamationTriangle,
 } from "react-icons/fa";
 import { IoArrowBack } from "react-icons/io5";
-import { Link, useParams, useNavigate } from "react-router-dom";
-import formatDate from "../lib/formateDate";
-import useAuth from "../hooks/useAuth";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
-import CustomToast from "@/components/CustomToast";
+import useAuth from "../hooks/useAuth";
+import formatDate from "../lib/formateDate";
+import useAxios from "../hooks/useAxios";
 
 const HuntingPost = () => {
     const [currentPost, setCurrentPost] = useState(null);
@@ -24,6 +24,8 @@ const HuntingPost = () => {
     const [error, setError] = useState(null);
     const [showConfirmDialog, setShowConfirmDialog] = useState(false);
     const [applying, setApplying] = useState(false);
+
+    const axiosSecure = useAxios();
 
     const { id } = useParams();
     const { user } = useAuth();
@@ -39,8 +41,8 @@ const HuntingPost = () => {
         setLoading(true);
         setError(null);
 
-        axios
-            .get(`${import.meta.env.VITE_SERVER_URL}/post/${id}`)
+        axiosSecure
+            .get(`/post/${id}`)
             .then((res) => {
                 setCurrentPost(res.data);
                 console.log(res.data);
@@ -50,7 +52,7 @@ const HuntingPost = () => {
                 setError(err.message);
                 setLoading(false);
             });
-    }, [id]);
+    }, [id, axiosSecure]);
 
     const navigateToEditPost = (postId) => {
         sessionStorage.setItem("editPostId", String(postId));

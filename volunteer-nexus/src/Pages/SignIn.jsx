@@ -37,6 +37,26 @@ const SignIn = () => {
         }
     };
 
+    const getJWTToken = async (userData) => {
+        try {
+            await axios.post(
+                `${import.meta.env.VITE_SERVER_URL}/jwt`,
+                {
+                    email: userData.email,
+                    displayName: userData.displayName,
+                },
+                {
+                    withCredentials: true,
+                }
+            );
+            console.log("JWT token set in httpOnly cookie");
+            return true;
+        } catch (error) {
+            console.error("Error getting JWT token:", error);
+            return false;
+        }
+    };
+
     const handleSignInWithEmailAndPass = (e) => {
         e.preventDefault();
         const formData = new FormData(e.currentTarget);
@@ -50,6 +70,12 @@ const SignIn = () => {
                         displayName: userCredential.user.displayName,
                         email: userCredential.user.email,
                         photoURL: userCredential.user.photoURL,
+                    });
+
+                    // Get JWT token (set in httpOnly cookie)
+                    await getJWTToken({
+                        email: userCredential.user.email,
+                        displayName: userCredential.user.displayName,
                     });
                 }
 

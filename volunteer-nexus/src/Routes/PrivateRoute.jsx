@@ -1,7 +1,7 @@
 import React from "react";
-import useAuth from "../hooks/useAuth";
-import { LoaderFive } from "@/components/ui/loader";
 import { useNavigate } from "react-router-dom";
+import Loading from "../components/Loading";
+import useAuth from "../hooks/useAuth";
 
 const PrivateRoute = ({ children }) => {
     const { user, userLoading } = useAuth();
@@ -13,11 +13,7 @@ const PrivateRoute = ({ children }) => {
     }
 
     if (userLoading) {
-        return (
-            <div className="max-w-sm h-full mt-20 mx-auto flex justify-center items-center">
-                <LoaderFive text="dhet! abar ki shob load kora lagbe..." />
-            </div>
-        );
+        return <Loading />;
     }
 
     if (!user) {

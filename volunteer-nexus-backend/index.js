@@ -3,18 +3,34 @@ import "dotenv/config";
 import express from "express";
 import { MongoClient, ObjectId, ServerApiVersion } from "mongodb";
 import jwt from "jsonwebtoken";
+import cookieParser from "cookie-parser";
 
 // initiate express app
 const app = express();
 const port = process.env.port || 3000;
 
-// TODO: implement jwt token verification
-
 // middleware
-app.use(cors(["http://localhost:5173"]));
+app.use(
+    cors({
+        origin: "http://localhost:5173",
+        credentials: true,
+    })
+);
 app.use(express.json());
+app.use(cookieParser());
 
 const uri = process.env.DB_URI;
+
+const verifyToken = (req, res, next) => {
+    const token = req.cookies?.jwt_token;
+    if (!token) return res.status(401).send({ message: "Unauthorized" });
+
+    jwt.verify(token, process.env.JWT_SECRET, (error, decoded) => {
+        if (error) return res.status(401).send({ message: "Unauthorized" });
+        req.user = decoded;
+        next();
+    });
+};
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
@@ -40,10 +56,28 @@ async function run() {
         const usersCollection = database.collection("users");
         const applicationsCollection = database.collection("applications");
 
+        // jwt authentication apis
+        app.post("/jwt", async (req, res) => {
+            console.log("JWT endpoint - cookies:", req.cookies);
+            console.log("JWT endpoint - headers:", req.headers);
+            const user = req.body;
+            const token = jwt.sign(user, process.env.JWT_SECRET, {
+                expiresIn: "7d",
+            });
+            console.log("Setting JWT cookie for user:", user.email);
+            res.status(200)
+                .cookie("jwt_token", token, {
+                    httpOnly: true,
+                    secure: false,
+                    sameSite: "lax",
+                    maxAge: 7 * 24 * 60 * 60 * 1000,
+                })
+                .send({ message: "JWT token created successfully" });
+        });
+
         app.get("/all-posts", async (req, res) => {
             try {
                 const result = await postCollection.find().toArray();
-                console.log(result);
                 res.status(200).send(result);
             } catch (error) {
                 res.status(500).send(error.message);
@@ -66,7 +100,6 @@ async function run() {
                         },
                     ])
                     .toArray();
-                console.log(result);
 
                 res.status(200).send(result);
             } catch (error) {
@@ -75,6 +108,7 @@ async function run() {
         });
 
         app.get("/active-posts/featured", async (req, res) => {
+            console.log("cookies", req.cookies);
             try {
                 const result = await postCollection
                     .aggregate([
@@ -93,7 +127,6 @@ async function run() {
                         },
                     ])
                     .toArray();
-                console.log("Featured posts (random 6):", result);
 
                 res.status(200).send(result);
             } catch (error) {
@@ -101,14 +134,13 @@ async function run() {
             }
         });
 
-        app.get("/post/:id", async (req, res) => {
+        app.get("/post/:id", verifyToken, async (req, res) => {
+            console.log("inside post endpoint");
             try {
                 const { id } = req.params;
-                console.log("Looking for post with ID:", id);
                 const result = await postCollection.findOne({
                     _id: new ObjectId(id),
                 });
-                console.log("Found post:", result);
                 res.status(200).send(result);
             } catch (error) {
                 console.error("Error fetching post:", error);
@@ -116,14 +148,16 @@ async function run() {
             }
         });
 
-        app.get("/posts/:email", async (req, res) => {
+        app.get("/posts/:email", verifyToken, async (req, res) => {
+            if (req.user.email !== req.params.email) {
+                return res.status(401).send({ message: "Unauthorized" });
+            }
+
             try {
                 const { email } = req.params;
-                console.log("Looking for posts by email:", email);
                 const result = await postCollection
                     .find({ creatorEmail: email })
                     .toArray();
-                console.log("Found posts:", result);
                 res.status(200).send(result);
             } catch (error) {
                 console.error("Error fetching posts by email:", error);
@@ -227,7 +261,6 @@ async function run() {
                     },
                 });
             } catch (error) {
-                console.error("Error creating user:", error);
                 res.status(500).send({
                     message: "Failed to create user",
                     error: error.message,
@@ -236,8 +269,6 @@ async function run() {
         });
 
         app.get("/users/:email", async (req, res) => {
-            // This API endpoint is used to fetch a user document from the database based on their email address.
-            // It responds with the user's data if found, or a 404 error if the user does not exist.
             try {
                 const { email } = req.params;
                 const user = await usersCollection.findOne({ email });
@@ -250,7 +281,6 @@ async function run() {
 
                 res.status(200).send(user);
             } catch (error) {
-                console.error("Error fetching user:", error);
                 res.status(500).send({
                     message: "Failed to fetch user",
                     error: error.message,
@@ -290,7 +320,6 @@ async function run() {
 
                 res.status(200).send(applicationsWithPostDetails);
             } catch (error) {
-                console.error("Error fetching applicant applications:", error);
                 res.status(500).send({
                     message: "Failed to fetch applicant applications",
                     error: error.message,
@@ -336,7 +365,6 @@ async function run() {
 
                 res.status(200).send(applicationsWithPostDetails);
             } catch (error) {
-                console.error("Error fetching applications:", error);
                 res.status(500).send({
                     message: "Failed to fetch applications",
                     error: error.message,
@@ -376,7 +404,6 @@ async function run() {
                     application: updated,
                 });
             } catch (error) {
-                console.error("Error updating application status:", error);
                 res.status(500).send({
                     message: "Failed to update application status",
                     error: error.message,
@@ -462,9 +489,27 @@ async function run() {
                     },
                 });
             } catch (error) {
-                console.error("Error creating application:", error);
                 res.status(500).send({
                     message: "Failed to submit application",
+                    error: error.message,
+                });
+            }
+        });
+
+        app.post("/signout", async (req, res) => {
+            try {
+                res.clearCookie("jwt_token", {
+                    httpOnly: true,
+                    secure: false,
+                    sameSite: "lax",
+                    maxAge: 0,
+                });
+                res.status(200).send({
+                    message: "Signed out successfully",
+                });
+            } catch (error) {
+                res.status(500).send({
+                    message: "Failed to sign out",
                     error: error.message,
                 });
             }
@@ -474,6 +519,7 @@ async function run() {
         // await client.close();
     }
 }
+
 run().catch(console.dir);
 
 app.get("/", async (req, res) => {

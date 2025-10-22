@@ -30,6 +30,7 @@ import { Link, Outlet, useLocation } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
 import { toast } from "sonner";
 import CustomToast from "./CustomToast";
+import axios from "axios";
 
 const TopNavBar = () => {
     const { user, signOutUser } = useAuth();
@@ -38,14 +39,23 @@ const TopNavBar = () => {
     const handleSignOut = async () => {
         try {
             await signOutUser().then(() => {
-                toast.custom((t) => {
+                axios
+                    .post(
+                        `${import.meta.env.VITE_SERVER_URL}/signout`,
+                        {},
+                        { withCredentials: true }
+                    )
+                    .then((res) => {
+                        console.log(res.data);
+                    });
+                toast.custom((t) => (
                     <CustomToast
                         type="success"
                         onClose={() => toast.dismiss(t)}
                     >
                         Signed Out Successful!
-                    </CustomToast>;
-                });
+                    </CustomToast>
+                ));
             });
         } catch (err) {
             console.error(err);

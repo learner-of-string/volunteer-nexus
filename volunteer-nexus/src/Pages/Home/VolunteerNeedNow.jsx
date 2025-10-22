@@ -54,7 +54,9 @@ const VolunteerNeedNow = ({ searchTerm = "", selectedCategory = "all" }) => {
         setError(null);
 
         axios
-            .get(`${import.meta.env.VITE_SERVER_URL}/active-posts/featured`)
+            .get(`${import.meta.env.VITE_SERVER_URL}/active-posts/featured`, {
+                withCredentials: true,
+            })
             .then((res) => {
                 setVolunteerHuntingPost(res.data);
                 setLoading(false);

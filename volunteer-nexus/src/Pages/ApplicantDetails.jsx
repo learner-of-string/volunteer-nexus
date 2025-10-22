@@ -1,32 +1,29 @@
+import CustomToast from "@/components/CustomToast";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import axios from "axios";
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
     FaArrowLeft,
     FaCalendarAlt,
+    FaCheckCircle,
+    FaClock,
     FaEnvelope,
-    FaMapMarkerAlt,
+    FaExclamationTriangle,
+    FaHourglassHalf,
+    FaTimesCircle,
     FaUser,
     FaUserCircle,
     FaUsers,
-    FaClock,
-    FaCheckCircle,
-    FaExclamationTriangle,
-    FaTimesCircle,
-    FaHourglassHalf,
 } from "react-icons/fa";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
-import CustomToast from "@/components/CustomToast";
-// import useAuth from "../hooks/useAuth"; // Not needed for this component
 
 const ApplicantDetails = () => {
     const [applicant, setApplicant] = useState(null);
     const [applications, setApplications] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    // const { user } = useAuth(); // Not needed for this component
     const navigate = useNavigate();
     const { applicantEmail } = useParams();
 

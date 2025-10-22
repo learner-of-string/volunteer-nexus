@@ -29,6 +29,26 @@ const ContinueWithGoogle = () => {
         }
     };
 
+    const getJWTToken = async (userData) => {
+        try {
+            await axios.post(
+                `${import.meta.env.VITE_SERVER_URL}/jwt`,
+                {
+                    email: userData.email,
+                    displayName: userData.displayName,
+                },
+                {
+                    withCredentials: true,
+                }
+            );
+            console.log("JWT token set in httpOnly cookie");
+            return true;
+        } catch (error) {
+            console.error("Error getting JWT token:", error);
+            return false;
+        }
+    };
+
     const handleGoogleSignIn = () => {
         signInWithGoogle()
             .then(async (res) => {
@@ -40,6 +60,12 @@ const ContinueWithGoogle = () => {
                         displayName: res.user.displayName,
                         email: res.user.email,
                         photoURL: res.user.photoURL,
+                    });
+
+                    // Get JWT token (set in httpOnly cookie)
+                    await getJWTToken({
+                        email: res.user.email,
+                        displayName: res.user.displayName,
                     });
                 }
 

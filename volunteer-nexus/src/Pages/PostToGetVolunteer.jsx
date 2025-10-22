@@ -1,7 +1,13 @@
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from "@/components/ui/popover";
 import {
     Select,
     SelectContent,
@@ -10,6 +16,9 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import axios from "axios";
+import { useEffect, useState } from "react";
 import {
     FaBuilding,
     FaCalendarAlt,
@@ -20,18 +29,9 @@ import {
 } from "react-icons/fa";
 import { IoAlertCircle } from "react-icons/io5";
 import { LuCheck, LuChevronDown, LuUpload } from "react-icons/lu";
-import { categoriesItem } from "../lib/categoriesItem";
-import { Badge } from "@/components/ui/badge";
-import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-} from "@/components/ui/popover";
-import { Textarea } from "@/components/ui/textarea";
-import axios from "axios";
-import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
+import { categoriesItem } from "../lib/categoriesItem";
 
 const PostToGetVolunteer = () => {
     const { id } = useParams();
