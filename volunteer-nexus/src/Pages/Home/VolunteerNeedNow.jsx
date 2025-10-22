@@ -70,7 +70,7 @@ const VolunteerNeedNow = ({ searchTerm = "", selectedCategory = "all" }) => {
 
     if (loading) {
         return (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 container mx-auto my-6 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 container mx-auto my-6 gap-4 sm:gap-6 lg:gap-8 px-4 sm:px-6">
                 {[...Array(6)].map((_, index) => (
                     <div key={index} className="animate-pulse">
                         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm flex flex-col h-full">
@@ -91,7 +91,7 @@ const VolunteerNeedNow = ({ searchTerm = "", selectedCategory = "all" }) => {
 
     if (error) {
         return (
-            <div className="container mx-auto my-6 text-center py-12">
+            <div className="container mx-auto my-6 text-center py-12 px-4 sm:px-6">
                 <div className="text-red-500 text-6xl mb-4">⚠️</div>
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">
                     Failed to load opportunities
@@ -109,7 +109,7 @@ const VolunteerNeedNow = ({ searchTerm = "", selectedCategory = "all" }) => {
 
     if (volunteerHuntingPost.length === 0) {
         return (
-            <div className="container mx-auto my-6 text-center py-12">
+            <div className="container mx-auto my-6 text-center py-12 px-4 sm:px-6">
                 <div className="text-gray-400 text-6xl mb-4">🤝</div>
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">
                     No opportunities available
@@ -123,7 +123,7 @@ const VolunteerNeedNow = ({ searchTerm = "", selectedCategory = "all" }) => {
 
     if (filteredPosts.length === 0) {
         return (
-            <div className="container mx-auto my-6 text-center py-12">
+            <div className="container mx-auto my-6 text-center py-12 px-4 sm:px-6">
                 <div className="text-gray-400 text-6xl mb-4">🔍</div>
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">
                     No opportunities found
@@ -141,7 +141,7 @@ const VolunteerNeedNow = ({ searchTerm = "", selectedCategory = "all" }) => {
     return (
         <div className="space-y-6">
             {/* Results Count */}
-            <div className="container mx-auto">
+            <div className="container mx-auto px-4 sm:px-6">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <div className="space-y-1">
                         <p className="text-gray-700 font-medium">
@@ -158,7 +158,7 @@ const VolunteerNeedNow = ({ searchTerm = "", selectedCategory = "all" }) => {
             </div>
 
             {/* Posts Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 container mx-auto gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 container mx-auto gap-4 sm:gap-6 lg:gap-8 px-4 sm:px-6">
                 {filteredPosts.map((post) => (
                     <CometCard
                         key={post._id}

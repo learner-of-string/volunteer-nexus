@@ -35,13 +35,13 @@ const QueryHub = ({
     };
 
     return (
-        <div className="container mx-auto">
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+        <div className="container mx-auto px-4 sm:px-6">
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-6">
                 <div className="space-y-4">
                     {/* Main Filter Row */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                         {/* Search */}
-                        <div className="lg:col-span-1">
+                        <div className="sm:col-span-2 lg:col-span-1">
                             <label className="block text-sm font-medium text-gray-700 mb-2">
                                 Search Opportunities
                             </label>
@@ -52,13 +52,13 @@ const QueryHub = ({
                                     placeholder="Search by title or location..."
                                     value={searchTerm}
                                     onChange={handleSearchChange}
-                                    className="pl-10 h-12 w-full border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                                    className="pl-10 h-10 sm:h-12 w-full border-gray-200 focus:border-blue-500 focus:ring-blue-500"
                                 />
                             </div>
                         </div>
 
                         {/* Category Filter */}
-                        <div className="lg:col-span-1">
+                        <div className="sm:col-span-2 lg:col-span-1">
                             <label className="block text-sm font-medium text-gray-700 mb-2">
                                 Filter by Category
                             </label>
@@ -66,7 +66,7 @@ const QueryHub = ({
                                 value={selectedCategory}
                                 onValueChange={handleCategoryChange}
                             >
-                                <SelectTrigger className="h-12 w-full border-gray-200 focus:border-blue-500 focus:ring-blue-500">
+                                <SelectTrigger className="h-10 sm:h-12 w-full border-gray-200 focus:border-blue-500 focus:ring-blue-500">
                                     <FaFilter className="mr-2 text-gray-400 flex-shrink-0" />
                                     <SelectValue placeholder="All Categories" />
                                 </SelectTrigger>
@@ -88,11 +88,11 @@ const QueryHub = ({
                         </div>
 
                         {/* Clear Filters */}
-                        <div className="lg:col-span-1 flex items-end">
+                        <div className="sm:col-span-2 lg:col-span-1 flex items-end">
                             {(searchTerm || selectedCategory !== "all") && (
                                 <button
                                     onClick={clearFilters}
-                                    className="h-12 px-6 text-sm font-medium text-gray-600 hover:text-gray-900 border border-gray-200 rounded-lg hover:border-gray-300 transition-colors duration-200 w-full"
+                                    className="h-10 sm:h-12 px-4 sm:px-6 text-sm font-medium text-gray-600 hover:text-gray-900 border border-gray-200 rounded-lg hover:border-gray-300 transition-colors duration-200 w-full"
                                 >
                                     Clear Filters
                                 </button>

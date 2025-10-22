@@ -99,15 +99,15 @@ const SignIn = () => {
     };
 
     return (
-        <div className="container mx-auto px-4 py-16">
+        <div className="container mx-auto px-4 sm:px-6 py-8 sm:py-16">
             <div className="mx-auto w-full max-w-md">
-                <div className="relative rounded-2xl border bg-white/70 p-6 shadow-[0_20px_60px_-20px_rgba(0,0,0,0.2)] backdrop-blur dark:bg-neutral-900/60">
+                <div className="relative rounded-2xl border bg-white/70 p-4 sm:p-6 shadow-[0_20px_60px_-20px_rgba(0,0,0,0.2)] backdrop-blur dark:bg-neutral-900/60">
                     {/* Cute accent blob */}
                     <div className="pointer-events-none absolute -top-10 -right-10 h-28 w-28 rounded-full bg-blue-100 blur-2xl dark:bg-blue-500/20" />
                     <div className="pointer-events-none absolute -bottom-8 -left-10 h-24 w-24 rounded-full bg-pink-100 blur-2xl dark:bg-pink-500/20" />
 
-                    <div className="mb-6 text-center">
-                        <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
+                    <div className="mb-4 sm:mb-6 text-center">
+                        <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
                             Welcome back
                         </h1>
                         <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">

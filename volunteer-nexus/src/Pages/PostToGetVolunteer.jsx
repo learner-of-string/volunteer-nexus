@@ -358,7 +358,7 @@ const PostToGetVolunteer = () => {
                             )}
                         </div>
                         {/* Category and Deadline Row */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                             <div className="space-y-3">
                                 <Label
                                     htmlFor="category"
@@ -482,7 +482,7 @@ const PostToGetVolunteer = () => {
                             </div>
                         </div>
                         {/* Volunteers and Location Row */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                             <div className="space-y-3">
                                 <Label
                                     htmlFor="necessaryVolunteer"
@@ -592,7 +592,7 @@ const PostToGetVolunteer = () => {
                                 </Badge>
                             </h3>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                                 <div className="space-y-3">
                                     <Label
                                         htmlFor="organizer"

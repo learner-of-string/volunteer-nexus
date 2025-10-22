@@ -15,7 +15,7 @@ const Home = () => {
     return (
         <div className="min-h-screen bg-gray-50">
             <HeroArea />
-            <div className="py-8">
+            <div className="py-4 sm:py-6 lg:py-8">
                 <QueryHub
                     searchTerm={searchTerm}
                     setSearchTerm={setSearchTerm}

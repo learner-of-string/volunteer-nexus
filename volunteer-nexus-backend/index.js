@@ -12,7 +12,7 @@ const port = process.env.port || 3000;
 // middleware
 app.use(
     cors({
-        origin: "http://localhost:5173",
+        origin: "https://volunteer-nexus-f8b5d.web.app",
         credentials: true,
     })
 );
@@ -68,7 +68,7 @@ async function run() {
             res.status(200)
                 .cookie("jwt_token", token, {
                     httpOnly: true,
-                    secure: false,
+                    secure: true,
                     sameSite: "lax",
                     maxAge: 7 * 24 * 60 * 60 * 1000,
                 })
@@ -500,7 +500,7 @@ async function run() {
             try {
                 res.clearCookie("jwt_token", {
                     httpOnly: true,
-                    secure: false,
+                    secure: true,
                     sameSite: "lax",
                     maxAge: 0,
                 });
