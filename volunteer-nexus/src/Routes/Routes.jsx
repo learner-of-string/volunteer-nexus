@@ -13,11 +13,17 @@ import AllPost from "../Pages/AllPost";
 import ApplicantDetails from "../Pages/ApplicantDetails";
 import Dashboard from "../Pages/Dashboard";
 import MyApplications from "../Pages/MyApplications";
+import ScrollToTop from "../lib/ScrollToTop";
 
 const routes = createBrowserRouter([
     {
         path: "/",
-        element: <App />,
+        element: (
+            <>
+                <ScrollToTop />
+                <App />
+            </>
+        ),
         errorElement: <Page404 />,
         children: [
             {

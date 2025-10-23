@@ -1,38 +1,34 @@
 import useAuth from "@/hooks/useAuth";
-import axios from "axios";
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import CustomToast from "../components/CustomToast";
+import useAxios from "../hooks/useAxios";
 
 const Dashboard = () => {
     const { user, signOutUser } = useAuth();
     const navigate = useNavigate();
+    const secureAxios = useAxios();
 
     const handleSignOut = async () => {
         await signOutUser().then(() => {
-            axios
-                .post(
-                    `${import.meta.env.VITE_SERVER_URL}/signout`,
-                    {},
-                    { withCredentials: true }
-                )
-                .then((res) => {
-                    console.log(res.data);
-                    navigate("/");
-                });
-            toast.custom((t) => (
-                <CustomToast type="success" onClose={() => toast.dismiss(t)}>
-                    Signed Out Successfully!
-                </CustomToast>
-            ));
+            secureAxios(`/signout`).then(() => {
+                toast.custom((t) => (
+                    <CustomToast
+                        type="success"
+                        onClose={() => toast.dismiss(t)}
+                    >
+                        Signed Out Successfully!
+                    </CustomToast>
+                ));
+                navigate("/");
+            });
         });
     };
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
-            <div className="max-w-4xl mx-auto px-4 py-10">
-                {/* Welcome Header */}
+            <div className="max-w-6xl mx-auto px-4 py-10">
                 <div className="text-center mb-8">
                     <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full mb-4 shadow-lg">
                         <span className="text-white text-2xl font-bold">
@@ -48,11 +44,10 @@ const Dashboard = () => {
                 </div>
 
                 <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 p-8">
-                    {/* Profile Section */}
-                    <div className="flex items-center justify-between gap-5 mb-8">
-                        <div className="flex items-center gap-5">
-                            <div className="relative">
-                                <div className="w-24 h-24 rounded-full overflow-hidden bg-gradient-to-r from-blue-400 to-purple-500 p-1 shadow-lg">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-5 mb-8">
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-5">
+                            <div className="relative self-center sm:self-auto">
+                                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full overflow-hidden bg-gradient-to-r from-blue-400 to-purple-500 p-1 shadow-lg">
                                     {user?.photoURL ? (
                                         <img
                                             src={user.photoURL}
@@ -62,20 +57,20 @@ const Dashboard = () => {
                                         />
                                     ) : (
                                         <div className="w-full h-full rounded-full bg-gradient-to-r from-blue-400 to-purple-500 flex items-center justify-center">
-                                            <span className="text-white text-2xl font-bold">
+                                            <span className="text-white text-xl sm:text-2xl font-bold">
                                                 {user?.displayName?.charAt(0) ||
                                                     "U"}
                                             </span>
                                         </div>
                                     )}
                                 </div>
-                                <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-400 rounded-full border-2 border-white"></div>
+                                <div className="absolute -bottom-1 -right-1 w-5 h-5 sm:w-6 sm:h-6 bg-green-400 rounded-full border-2 border-white"></div>
                             </div>
-                            <div>
-                                <h2 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+                            <div className="text-center sm:text-left">
+                                <h2 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
                                     {user?.displayName || "User"}
                                 </h2>
-                                <p className="text-gray-600 text-lg">
+                                <p className="text-gray-600 text-base sm:text-lg break-all sm:break-normal">
                                     {user?.email || "-"}
                                 </p>
                             </div>
@@ -83,14 +78,13 @@ const Dashboard = () => {
                         <button
                             type="button"
                             onClick={handleSignOut}
-                            className="inline-flex items-center justify-center rounded-xl border border-red-200 bg-gradient-to-r from-red-500 to-pink-500 text-white px-6 py-3 text-sm font-medium hover:from-red-600 hover:to-pink-600 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 cursor-pointer"
+                            className="inline-flex items-center justify-center rounded-xl border border-red-200 bg-gradient-to-r from-red-500 to-pink-500 text-white px-4 sm:px-6 py-2.5 sm:py-3 text-sm font-medium hover:from-red-600 hover:to-pink-600 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 cursor-pointer w-full sm:w-auto"
                         >
                             Sign out
                         </button>
                     </div>
 
-                    {/* Action Buttons */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
                         <Link
                             to="/manage-post/me"
                             className="group relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-500 to-blue-600 text-white p-6 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
@@ -114,6 +108,38 @@ const Dashboard = () => {
                                         <p className="text-blue-100 text-sm">
                                             Create and manage volunteer
                                             opportunities
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </Link>
+
+                        <Link
+                            to="/volunteer/add-post"
+                            className="group relative overflow-hidden rounded-2xl bg-gradient-to-r from-orange-500 to-red-600 text-white p-6 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+                        >
+                            <div className="absolute inset-0 bg-gradient-to-r from-orange-600 to-red-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                            <div className="relative z-10">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                                        <svg
+                                            className="w-6 h-6"
+                                            fill="currentColor"
+                                            viewBox="0 0 20 20"
+                                        >
+                                            <path
+                                                fillRule="evenodd"
+                                                d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                                                clipRule="evenodd"
+                                            />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h3 className="text-xl font-bold">
+                                            Create New Post
+                                        </h3>
+                                        <p className="text-orange-100 text-sm">
+                                            Post a new volunteer opportunity
                                         </p>
                                     </div>
                                 </div>
@@ -153,12 +179,11 @@ const Dashboard = () => {
                         </Link>
                     </div>
 
-                    {/* Quick Summary */}
-                    <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl p-6 border border-purple-100">
-                        <div className="flex items-center gap-3 mb-4">
-                            <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
+                    <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl p-4 sm:p-6 border border-purple-100">
+                        <div className="flex items-center gap-3 mb-3 sm:mb-4">
+                            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
                                 <svg
-                                    className="w-5 h-5 text-white"
+                                    className="w-4 h-4 sm:w-5 sm:h-5 text-white"
                                     fill="currentColor"
                                     viewBox="0 0 20 20"
                                 >
@@ -169,12 +194,12 @@ const Dashboard = () => {
                                     />
                                 </svg>
                             </div>
-                            <h2 className="text-xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                            <h2 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
                                 Quick Summary
                             </h2>
                         </div>
-                        <div className="bg-white/60 backdrop-blur-sm rounded-xl p-4 border border-white/40">
-                            <p className="text-gray-700 leading-relaxed">
+                        <div className="bg-white/60 backdrop-blur-sm rounded-xl p-3 sm:p-4 border border-white/40">
+                            <p className="text-gray-700 leading-relaxed text-sm sm:text-base">
                                 View your applications in a separate page with a
                                 summary table (status, post title, applied
                                 date). Use the{" "}

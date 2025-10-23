@@ -1,6 +1,6 @@
+import CustomToast from "@/components/CustomToast";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
     Select,
     SelectContent,
@@ -8,28 +8,27 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import axios from "axios";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import React, { useEffect, useState } from "react";
 import {
     FaCalendarAlt,
     FaClipboardList,
     FaClock,
     FaEdit,
+    FaExclamationTriangle,
     FaHeart,
     FaMapMarkerAlt,
     FaPlus,
     FaTrash,
-    FaUsers,
-    FaExclamationTriangle,
     FaUser,
+    FaUsers,
 } from "react-icons/fa";
 import { LuSettings, LuUserCheck, LuUserX } from "react-icons/lu";
 import { Link, useNavigate } from "react-router-dom";
-import formatDate from "../lib/formateDate";
-import useAuth from "../hooks/useAuth";
 import { toast } from "sonner";
-import CustomToast from "@/components/CustomToast";
-import useAxios from "../hooks/useAxios";
+import useAuth from "../hooks/useAuth";
+import useAxios from "../hooks/useAxios.jsx";
+import formatDate from "../lib/formateDate";
 
 const ManageMyPost = () => {
     const [myVolunteerPosts, setMyVolunteerPosts] = useState([]);
@@ -86,17 +85,14 @@ const ManageMyPost = () => {
         },
     };
 
-    // Fetch user's posts and applications
     useEffect(() => {
         if (!user?.email) return;
 
         setLoading(true);
 
-        // Fetch user's posts
         axiosSecure
             .get(`/posts/${user.email}`)
             .then((res) => {
-                console.log("User posts:", res.data);
                 setMyVolunteerPosts(res.data);
             })
             .catch((err) => {
@@ -104,13 +100,9 @@ const ManageMyPost = () => {
                 setError("Failed to load your posts");
             });
 
-        // Fetch applications for user's posts
-        axios
-            .get(
-                `${import.meta.env.VITE_SERVER_URL}/applications/${user.email}`
-            )
+        axiosSecure
+            .get(`/applications/${user.email}`)
             .then((res) => {
-                console.log("Applications:", res.data);
                 setMyVolunteerRequests(res.data);
             })
             .catch((err) => {
@@ -131,14 +123,10 @@ const ManageMyPost = () => {
         try {
             setDeleteLoading(true);
             setError(null);
-            console.log(postId);
 
-            const response = await axios.delete(
-                `${import.meta.env.VITE_SERVER_URL}/posts/${postId}`
-            );
+            const response = await axiosSecure.delete(`/posts/${postId}`);
 
             if (response.status === 200) {
-                // Remove the deleted post from the state
                 setMyVolunteerPosts((prevPosts) =>
                     prevPosts.filter((post) => post._id !== postId)
                 );
@@ -154,7 +142,6 @@ const ManageMyPost = () => {
                 ));
                 setDeleteConfirm(null);
 
-                // Clear success message after 3 seconds
                 setTimeout(() => setSuccess(null), 3000);
             }
         } catch (err) {
@@ -174,7 +161,6 @@ const ManageMyPost = () => {
                 </CustomToast>
             ));
 
-            // Clear error message after 5 seconds
             setTimeout(() => setError(null), 5000);
         } finally {
             setDeleteLoading(false);
@@ -190,14 +176,12 @@ const ManageMyPost = () => {
     };
 
     const handleViewDetails = (applicantEmail) => {
-        const url = `/applicant/${encodeURIComponent(applicantEmail)}`;
-        window.open(url, "_blank", "noopener,noreferrer");
+        navigate(`/applicant/${encodeURIComponent(applicantEmail)}`);
     };
 
     const handleStatusUpdate = async (requestId, newStatus) => {
         const prev = myVolunteerRequests;
         try {
-            // Optimistic update
             setMyVolunteerRequests((prevRequests) =>
                 prevRequests.map((request) =>
                     request._id === requestId
@@ -206,10 +190,9 @@ const ManageMyPost = () => {
                 )
             );
 
-            await axios.put(
-                `${import.meta.env.VITE_SERVER_URL}/applications/${requestId}`,
-                { status: newStatus }
-            );
+            await axiosSecure.put(`/applications/${requestId}`, {
+                status: newStatus,
+            });
 
             toast.custom((t) => (
                 <CustomToast
@@ -222,7 +205,7 @@ const ManageMyPost = () => {
             ));
         } catch (error) {
             console.error("Error updating status:", error);
-            // Rollback
+
             setMyVolunteerRequests(prev);
             toast.custom((t) => (
                 <CustomToast
@@ -250,13 +233,12 @@ const ManageMyPost = () => {
 
     return (
         <div className="min-h-screen bg-gray-50">
-            <div className="max-w-7xl mx-auto px-4 py-8">
-                {/* Success Message */}
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
                 {success && (
-                    <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg flex items-center gap-3">
-                        <div className="w-5 h-5 bg-green-100 rounded-full flex items-center justify-center">
+                    <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-green-50 border border-green-200 rounded-lg flex items-center gap-2 sm:gap-3">
+                        <div className="w-4 h-4 sm:w-5 sm:h-5 bg-green-100 rounded-full flex items-center justify-center">
                             <svg
-                                className="w-3 h-3 text-green-600"
+                                className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-green-600"
                                 fill="currentColor"
                                 viewBox="0 0 20 20"
                             >
@@ -267,18 +249,17 @@ const ManageMyPost = () => {
                                 />
                             </svg>
                         </div>
-                        <span className="text-green-800 font-medium">
+                        <span className="text-green-800 font-medium text-sm sm:text-base">
                             {success}
                         </span>
                     </div>
                 )}
 
-                {/* Error Message */}
                 {error && (
-                    <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-3">
-                        <div className="w-5 h-5 bg-red-100 rounded-full flex items-center justify-center">
+                    <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 sm:gap-3">
+                        <div className="w-4 h-4 sm:w-5 sm:h-5 bg-red-100 rounded-full flex items-center justify-center">
                             <svg
-                                className="w-3 h-3 text-red-600"
+                                className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-red-600"
                                 fill="currentColor"
                                 viewBox="0 0 20 20"
                             >
@@ -289,34 +270,34 @@ const ManageMyPost = () => {
                                 />
                             </svg>
                         </div>
-                        <span className="text-red-800 font-medium">
+                        <span className="text-red-800 font-medium text-sm sm:text-base">
                             {error}
                         </span>
                     </div>
                 )}
-                {/* Header Section */}
-                <div className="text-center mb-12">
-                    <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full mb-6 shadow-lg">
-                        <LuSettings className="text-white text-3xl" />
+
+                <div className="text-center mb-8 sm:mb-12">
+                    <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full mb-4 sm:mb-6 shadow-lg">
+                        <LuSettings className="text-white text-2xl sm:text-3xl" />
                     </div>
-                    <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+                    <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-3 sm:mb-4">
                         Manage My Posts
                     </h1>
-                    <p className="text-lg text-gray-700 max-w-2xl mx-auto">
+                    <p className="text-base sm:text-lg text-gray-700 max-w-2xl mx-auto px-2">
                         Keep track of your volunteer opportunities and manage
                         your applications
                     </p>
                 </div>
 
                 <Tabs defaultValue="volunteerPost" className="w-full">
-                    <div className="flex justify-center mb-8">
-                        <div className="relative">
-                            <TabsList className="grid w-full max-w-md grid-cols-2 bg-gray-100 p-1.5 rounded-xl shadow-inner border border-gray-200 h-auto">
+                    <div className="flex justify-center mb-6 sm:mb-8">
+                        <div className="relative w-full max-w-sm sm:max-w-md">
+                            <TabsList className="grid w-full grid-cols-2 bg-gray-100 p-1 sm:p-1.5 rounded-xl shadow-inner border border-gray-200 h-auto">
                                 <TabsTrigger
                                     value="volunteerPost"
-                                    className="flex items-center gap-2 px-6 py-4 text-sm font-medium transition-all duration-200 data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-sm data-[state=inactive]:bg-transparent data-[state=inactive]:text-gray-600 data-[state=inactive]:hover:bg-gray-50 data-[state=inactive]:hover:text-gray-900 rounded-lg h-auto min-h-[48px]"
+                                    className="flex items-center gap-1 sm:gap-2 px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm font-medium transition-all duration-200 data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-sm data-[state=inactive]:bg-transparent data-[state=inactive]:text-gray-600 data-[state=inactive]:hover:bg-gray-50 data-[state=inactive]:hover:text-gray-900 rounded-lg h-auto min-h-[40px] sm:min-h-[48px]"
                                 >
-                                    <FaClipboardList className="w-4 h-4" />
+                                    <FaClipboardList className="w-3 h-3 sm:w-4 sm:h-4" />
                                     <span className="hidden sm:inline">
                                         My Posts
                                     </span>
@@ -324,7 +305,7 @@ const ManageMyPost = () => {
                                     {myVolunteerPosts.length > 0 && (
                                         <Badge
                                             variant="secondary"
-                                            className="ml-1 bg-blue-100 text-blue-700 text-xs px-2 py-0.5 rounded-full"
+                                            className="ml-1 bg-blue-100 text-blue-700 text-xs px-1.5 sm:px-2 py-0.5 rounded-full"
                                         >
                                             {myVolunteerPosts.length}
                                         </Badge>
@@ -332,9 +313,9 @@ const ManageMyPost = () => {
                                 </TabsTrigger>
                                 <TabsTrigger
                                     value="volunteerReq"
-                                    className="flex items-center gap-2 px-6 py-4 text-sm font-medium transition-all duration-200 data-[state=active]:bg-white data-[state=active]:text-green-600 data-[state=active]:shadow-sm data-[state=inactive]:bg-transparent data-[state=inactive]:text-gray-600 data-[state=inactive]:hover:bg-gray-50 data-[state=inactive]:hover:text-gray-900 rounded-lg h-auto min-h-[48px]"
+                                    className="flex items-center gap-1 sm:gap-2 px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm font-medium transition-all duration-200 data-[state=active]:bg-white data-[state=active]:text-green-600 data-[state=active]:shadow-sm data-[state=inactive]:bg-transparent data-[state=inactive]:text-gray-600 data-[state=inactive]:hover:bg-gray-50 data-[state=inactive]:hover:text-gray-900 rounded-lg h-auto min-h-[40px] sm:min-h-[48px]"
                                 >
-                                    <FaHeart className="w-4 h-4" />
+                                    <FaHeart className="w-3 h-3 sm:w-4 sm:h-4" />
                                     <span className="hidden sm:inline">
                                         Volunteer Request
                                     </span>
@@ -342,7 +323,7 @@ const ManageMyPost = () => {
                                     {myVolunteerRequests.length > 0 && (
                                         <Badge
                                             variant="secondary"
-                                            className="ml-1 bg-green-100 text-green-700 text-xs px-2 py-0.5 rounded-full"
+                                            className="ml-1 bg-green-100 text-green-700 text-xs px-1.5 sm:px-2 py-0.5 rounded-full"
                                         >
                                             {myVolunteerRequests.length}
                                         </Badge>
@@ -355,26 +336,25 @@ const ManageMyPost = () => {
                         value="volunteerPost"
                         className="mt-0 animate-in fade-in-50 duration-300"
                     >
-                        {/* My Volunteer Need Posts Section */}
-                        <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden transform transition-all duration-300 hover:shadow-xl">
-                            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-6 border-b border-gray-100">
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-4">
-                                        <div className="p-3 bg-blue-100 rounded-xl shadow-sm">
-                                            <FaClipboardList className="text-blue-600 text-2xl" />
+                        <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg border border-gray-200 overflow-hidden transform transition-all duration-300 hover:shadow-xl">
+                            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-4 sm:px-6 py-4 sm:py-6 border-b border-gray-100">
+                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                                    <div className="flex items-center gap-3 sm:gap-4">
+                                        <div className="p-2 sm:p-3 bg-blue-100 rounded-xl shadow-sm">
+                                            <FaClipboardList className="text-blue-600 text-xl sm:text-2xl" />
                                         </div>
                                         <div>
-                                            <h2 className="text-2xl font-bold text-gray-900 mb-1">
+                                            <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 mb-1">
                                                 My Volunteer Need Posts
                                             </h2>
-                                            <p className="text-gray-600 text-sm">
+                                            <p className="text-gray-600 text-xs sm:text-sm">
                                                 Posts you've created to find
                                                 volunteers
                                             </p>
                                         </div>
                                     </div>
-                                    <div className="text-right">
-                                        <div className="text-2xl font-bold text-blue-600">
+                                    <div className="text-left sm:text-right">
+                                        <div className="text-xl sm:text-2xl font-bold text-blue-600">
                                             {myVolunteerPosts.length}
                                         </div>
                                         <div className="text-xs text-gray-500 uppercase tracking-wide">
@@ -384,28 +364,28 @@ const ManageMyPost = () => {
                                 </div>
                             </div>
 
-                            <div className="p-6">
+                            <div className="p-4 sm:p-6">
                                 {myVolunteerPosts.length > 0 ? (
                                     <div className="overflow-x-auto">
-                                        <table className="w-full">
+                                        <table className="w-full min-w-[600px]">
                                             <thead>
                                                 <tr className="border-b border-gray-200">
-                                                    <th className="text-left py-3 px-4 font-semibold text-gray-900">
+                                                    <th className="text-left py-2 sm:py-3 px-2 sm:px-4 font-semibold text-gray-900 text-xs sm:text-sm">
                                                         Post Title
                                                     </th>
-                                                    <th className="text-left py-3 px-4 font-semibold text-gray-900">
+                                                    <th className="text-left py-2 sm:py-3 px-2 sm:px-4 font-semibold text-gray-900 text-xs sm:text-sm">
                                                         Category
                                                     </th>
-                                                    <th className="text-left py-3 px-4 font-semibold text-gray-900">
+                                                    <th className="text-left py-2 sm:py-3 px-2 sm:px-4 font-semibold text-gray-900 text-xs sm:text-sm">
                                                         Volunteers
                                                     </th>
-                                                    <th className="text-left py-3 px-4 font-semibold text-gray-900">
+                                                    <th className="text-left py-2 sm:py-3 px-2 sm:px-4 font-semibold text-gray-900 text-xs sm:text-sm">
                                                         Deadline
                                                     </th>
-                                                    <th className="text-left py-3 px-4 font-semibold text-gray-900">
+                                                    <th className="text-left py-2 sm:py-3 px-2 sm:px-4 font-semibold text-gray-900 text-xs sm:text-sm">
                                                         Location
                                                     </th>
-                                                    <th className="text-center py-3 px-4 font-semibold text-gray-900">
+                                                    <th className="text-center py-2 sm:py-3 px-2 sm:px-4 font-semibold text-gray-900 text-xs sm:text-sm">
                                                         Actions
                                                     </th>
                                                 </tr>
@@ -417,8 +397,8 @@ const ManageMyPost = () => {
                                                             key={post._id}
                                                             className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
                                                         >
-                                                            <td className="py-4 px-4">
-                                                                <div className="font-medium text-gray-900">
+                                                            <td className="py-3 sm:py-4 px-2 sm:px-4">
+                                                                <div className="font-medium text-gray-900 text-sm sm:text-base">
                                                                     <Link
                                                                         className="hover:underline"
                                                                         to={`/volunteer-need/${post._id}`}
@@ -429,19 +409,19 @@ const ManageMyPost = () => {
                                                                     </Link>
                                                                 </div>
                                                             </td>
-                                                            <td className="py-4 px-4">
+                                                            <td className="py-3 sm:py-4 px-2 sm:px-4">
                                                                 <Badge
                                                                     variant="outline"
-                                                                    className="bg-blue-50 text-blue-700 border-blue-200"
+                                                                    className="bg-blue-50 text-blue-700 border-blue-200 text-xs"
                                                                 >
                                                                     {
                                                                         post.category
                                                                     }
                                                                 </Badge>
                                                             </td>
-                                                            <td className="py-4 px-4">
-                                                                <div className="flex items-center gap-2 text-sm">
-                                                                    <FaUsers className="text-gray-400" />
+                                                            <td className="py-3 sm:py-4 px-2 sm:px-4">
+                                                                <div className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+                                                                    <FaUsers className="text-gray-400 w-3 h-3 sm:w-4 sm:h-4" />
                                                                     <span className="text-gray-600">
                                                                         {
                                                                             post.interestedVolunteers
@@ -453,24 +433,24 @@ const ManageMyPost = () => {
                                                                     </span>
                                                                 </div>
                                                             </td>
-                                                            <td className="py-4 px-4">
-                                                                <div className="flex items-center gap-2 text-sm text-gray-600">
-                                                                    <FaCalendarAlt className="text-gray-400" />
+                                                            <td className="py-3 sm:py-4 px-2 sm:px-4">
+                                                                <div className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm text-gray-600">
+                                                                    <FaCalendarAlt className="text-gray-400 w-3 h-3 sm:w-4 sm:h-4" />
                                                                     {formatDate(
                                                                         post.deadline
                                                                     )}
                                                                 </div>
                                                             </td>
-                                                            <td className="py-4 px-4">
-                                                                <div className="flex items-center gap-2 text-sm text-gray-600">
-                                                                    <FaMapMarkerAlt className="text-gray-400" />
+                                                            <td className="py-3 sm:py-4 px-2 sm:px-4">
+                                                                <div className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm text-gray-600">
+                                                                    <FaMapMarkerAlt className="text-gray-400 w-3 h-3 sm:w-4 sm:h-4" />
                                                                     {
                                                                         post.location
                                                                     }
                                                                 </div>
                                                             </td>
-                                                            <td className="py-4 px-4">
-                                                                <div className="flex items-center gap-2 justify-center">
+                                                            <td className="py-3 sm:py-4 px-2 sm:px-4">
+                                                                <div className="flex items-center gap-1 sm:gap-2 justify-center">
                                                                     <Button
                                                                         size="sm"
                                                                         variant="outline"
@@ -479,10 +459,12 @@ const ManageMyPost = () => {
                                                                                 post._id
                                                                             )
                                                                         }
-                                                                        className="text-blue-600 border-blue-200 hover:bg-blue-50 cursor-pointer"
+                                                                        className="text-blue-600 border-blue-200 hover:bg-blue-50 cursor-pointer text-xs px-2 py-1 sm:px-3 sm:py-2"
                                                                     >
                                                                         <FaEdit className="w-3 h-3 mr-1" />
-                                                                        Edit
+                                                                        <span className="hidden sm:inline">
+                                                                            Edit
+                                                                        </span>
                                                                     </Button>
                                                                     <Button
                                                                         size="sm"
@@ -492,10 +474,12 @@ const ManageMyPost = () => {
                                                                                 post
                                                                             )
                                                                         }
-                                                                        className="text-red-600 border-red-200 hover:bg-red-50"
+                                                                        className="text-red-600 border-red-200 hover:bg-red-50 text-xs px-2 py-1 sm:px-3 sm:py-2"
                                                                     >
                                                                         <FaTrash className="w-3 h-3 mr-1" />
-                                                                        Delete
+                                                                        <span className="hidden sm:inline">
+                                                                            Delete
+                                                                        </span>
                                                                     </Button>
                                                                 </div>
                                                             </td>
@@ -506,18 +490,18 @@ const ManageMyPost = () => {
                                         </table>
                                     </div>
                                 ) : (
-                                    <div className="text-center py-12">
-                                        <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                            <FaPlus className="text-gray-400 text-2xl" />
+                                    <div className="text-center py-8 sm:py-12">
+                                        <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                                            <FaPlus className="text-gray-400 text-xl sm:text-2xl" />
                                         </div>
-                                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                                        <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2">
                                             No posts yet
                                         </h3>
-                                        <p className="text-gray-600 mb-6">
+                                        <p className="text-gray-600 mb-4 sm:mb-6 text-sm sm:text-base">
                                             You haven't created any volunteer
                                             opportunities yet.
                                         </p>
-                                        <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+                                        <Button className="bg-blue-600 hover:bg-blue-700 text-white text-sm sm:text-base px-4 py-2 sm:px-6 sm:py-3">
                                             Create Your First Post
                                         </Button>
                                     </div>
@@ -525,31 +509,30 @@ const ManageMyPost = () => {
                             </div>
                         </div>
                     </TabsContent>
-                    {/* volunteer req section */}
+
                     <TabsContent
                         value="volunteerReq"
                         className="mt-0 animate-in fade-in-50 duration-300"
                     >
-                        {/* My Volunteer Request Posts Section */}
-                        <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden transform transition-all duration-300 hover:shadow-xl">
-                            <div className="bg-gradient-to-r from-green-50 to-emerald-50 px-6 py-6 border-b border-gray-100">
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-4">
-                                        <div className="p-3 bg-green-100 rounded-xl shadow-sm">
-                                            <FaHeart className="text-green-600 text-2xl" />
+                        <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg border border-gray-200 overflow-hidden transform transition-all duration-300 hover:shadow-xl">
+                            <div className="bg-gradient-to-r from-green-50 to-emerald-50 px-4 sm:px-6 py-4 sm:py-6 border-b border-gray-100">
+                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                                    <div className="flex items-center gap-3 sm:gap-4">
+                                        <div className="p-2 sm:p-3 bg-green-100 rounded-xl shadow-sm">
+                                            <FaHeart className="text-green-600 text-xl sm:text-2xl" />
                                         </div>
                                         <div>
-                                            <h2 className="text-2xl font-bold text-gray-900 mb-1">
+                                            <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 mb-1">
                                                 Applicant Management
                                             </h2>
-                                            <p className="text-gray-600 text-sm">
+                                            <p className="text-gray-600 text-xs sm:text-sm">
                                                 Manage applicants who responded
                                                 to your posts
                                             </p>
                                         </div>
                                     </div>
-                                    <div className="text-right">
-                                        <div className="text-2xl font-bold text-green-600">
+                                    <div className="text-left sm:text-right">
+                                        <div className="text-xl sm:text-2xl font-bold text-green-600">
                                             {myVolunteerRequests.length}
                                         </div>
                                         <div className="text-xs text-gray-500 uppercase tracking-wide">
@@ -559,28 +542,28 @@ const ManageMyPost = () => {
                                 </div>
                             </div>
 
-                            <div className="p-6">
+                            <div className="p-4 sm:p-6">
                                 {myVolunteerRequests.length > 0 ? (
                                     <div className="overflow-x-auto">
-                                        <table className="w-full">
+                                        <table className="w-full min-w-[600px]">
                                             <thead>
                                                 <tr className="border-b border-gray-200">
-                                                    <th className="text-left py-3 px-4 font-semibold text-gray-900">
+                                                    <th className="text-left py-2 sm:py-3 px-2 sm:px-4 font-semibold text-gray-900 text-xs sm:text-sm">
                                                         Post Title
                                                     </th>
-                                                    <th className="text-left py-3 px-4 font-semibold text-gray-900">
+                                                    <th className="text-left py-2 sm:py-3 px-2 sm:px-4 font-semibold text-gray-900 text-xs sm:text-sm">
                                                         Category
                                                     </th>
-                                                    <th className="text-left py-3 px-4 font-semibold text-gray-900">
+                                                    <th className="text-left py-2 sm:py-3 px-2 sm:px-4 font-semibold text-gray-900 text-xs sm:text-sm">
                                                         Applicant
                                                     </th>
-                                                    <th className="text-left py-3 px-4 font-semibold text-gray-900">
+                                                    <th className="text-left py-2 sm:py-3 px-2 sm:px-4 font-semibold text-gray-900 text-xs sm:text-sm">
                                                         Applied Date
                                                     </th>
-                                                    <th className="text-left py-3 px-4 font-semibold text-gray-900">
+                                                    <th className="text-left py-2 sm:py-3 px-2 sm:px-4 font-semibold text-gray-900 text-xs sm:text-sm">
                                                         Status
                                                     </th>
-                                                    <th className="text-center py-3 px-4 font-semibold text-gray-900">
+                                                    <th className="text-center py-2 sm:py-3 px-2 sm:px-4 font-semibold text-gray-900 text-xs sm:text-sm">
                                                         Actions
                                                     </th>
                                                 </tr>
@@ -795,18 +778,18 @@ const ManageMyPost = () => {
                                         </table>
                                     </div>
                                 ) : (
-                                    <div className="text-center py-12">
-                                        <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                            <FaHeart className="text-gray-400 text-2xl" />
+                                    <div className="text-center py-8 sm:py-12">
+                                        <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                                            <FaHeart className="text-gray-400 text-xl sm:text-2xl" />
                                         </div>
-                                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                                        <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2">
                                             No applicants yet
                                         </h3>
-                                        <p className="text-gray-600 mb-6">
+                                        <p className="text-gray-600 mb-4 sm:mb-6 text-sm sm:text-base">
                                             No one has applied to your volunteer
                                             opportunities yet.
                                         </p>
-                                        <Button className="bg-green-600 hover:bg-green-700 text-white">
+                                        <Button className="bg-green-600 hover:bg-green-700 text-white text-sm sm:text-base px-4 py-2 sm:px-6 sm:py-3">
                                             Create New Post
                                         </Button>
                                     </div>
@@ -817,45 +800,44 @@ const ManageMyPost = () => {
                 </Tabs>
             </div>
 
-            {/* Delete Confirmation Dialog */}
             {deleteConfirm && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 transform transition-all duration-300 scale-100">
-                        <div className="flex items-center gap-4 mb-6">
-                            <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
-                                <FaExclamationTriangle className="text-red-600 text-xl" />
+                    <div className="bg-white rounded-xl sm:rounded-2xl shadow-2xl max-w-md w-full p-4 sm:p-6 transform transition-all duration-300 scale-100">
+                        <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
+                            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-red-100 rounded-full flex items-center justify-center">
+                                <FaExclamationTriangle className="text-red-600 text-lg sm:text-xl" />
                             </div>
                             <div>
-                                <h3 className="text-lg font-semibold text-gray-900">
+                                <h3 className="text-base sm:text-lg font-semibold text-gray-900">
                                     Delete Post
                                 </h3>
-                                <p className="text-sm text-gray-600">
+                                <p className="text-xs sm:text-sm text-gray-600">
                                     This action cannot be undone
                                 </p>
                             </div>
                         </div>
 
-                        <div className="mb-6">
-                            <p className="text-gray-700 mb-2">
+                        <div className="mb-4 sm:mb-6">
+                            <p className="text-gray-700 mb-2 text-sm sm:text-base">
                                 Are you sure you want to delete this post?
                             </p>
                             <div className="bg-gray-50 rounded-lg p-3 border">
-                                <p className="font-medium text-gray-900">
+                                <p className="font-medium text-gray-900 text-sm sm:text-base">
                                     {deleteConfirm.postTitle}
                                 </p>
-                                <p className="text-sm text-gray-600 mt-1">
+                                <p className="text-xs sm:text-sm text-gray-600 mt-1">
                                     {deleteConfirm.category} •{" "}
                                     {deleteConfirm.location}
                                 </p>
                             </div>
                         </div>
 
-                        <div className="flex gap-3 justify-end">
+                        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 justify-end">
                             <Button
                                 variant="outline"
                                 onClick={cancelDelete}
                                 disabled={deleteLoading}
-                                className="px-6"
+                                className="px-4 sm:px-6 py-2 text-sm sm:text-base"
                             >
                                 Cancel
                             </Button>
@@ -865,17 +847,21 @@ const ManageMyPost = () => {
                                     handleDeletePost(deleteConfirm._id)
                                 }
                                 disabled={deleteLoading}
-                                className="px-6"
+                                className="px-4 sm:px-6 py-2 text-sm sm:text-base"
                             >
                                 {deleteLoading ? (
                                     <>
-                                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                                        Deleting...
+                                        <div className="w-3 h-3 sm:w-4 sm:h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-1 sm:mr-2" />
+                                        <span className="text-xs sm:text-sm">
+                                            Deleting...
+                                        </span>
                                     </>
                                 ) : (
                                     <>
-                                        <FaTrash className="w-4 h-4 mr-2" />
-                                        Delete Post
+                                        <FaTrash className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                                        <span className="text-xs sm:text-sm">
+                                            Delete Post
+                                        </span>
                                     </>
                                 )}
                             </Button>

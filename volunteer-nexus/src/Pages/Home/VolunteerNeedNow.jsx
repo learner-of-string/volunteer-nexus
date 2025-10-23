@@ -1,10 +1,10 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CometCard } from "@/components/ui/comet-card";
-import axios from "axios";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { FaClock, FaMapMarkerAlt, FaUsers } from "react-icons/fa";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import useAxios from "../../hooks/useAxios.jsx";
 import formatDate from "../../lib/formateDate";
 
 const VolunteerNeedNow = ({ searchTerm = "", selectedCategory = "all" }) => {
@@ -14,11 +14,11 @@ const VolunteerNeedNow = ({ searchTerm = "", selectedCategory = "all" }) => {
 
     const navigate = useNavigate();
 
-    // Filter posts based on search term and category
+    const secureAxios = useAxios();
+
     const filteredPosts = useMemo(() => {
         let filtered = [...volunteerHuntingPost];
 
-        // Filter by search term
         if (searchTerm) {
             filtered = filtered.filter(
                 (post) =>
@@ -37,7 +37,6 @@ const VolunteerNeedNow = ({ searchTerm = "", selectedCategory = "all" }) => {
             );
         }
 
-        // Filter by category
         if (selectedCategory !== "all") {
             filtered = filtered.filter(
                 (post) =>
@@ -53,10 +52,8 @@ const VolunteerNeedNow = ({ searchTerm = "", selectedCategory = "all" }) => {
         setLoading(true);
         setError(null);
 
-        axios
-            .get(`${import.meta.env.VITE_SERVER_URL}/active-posts/featured`, {
-                withCredentials: true,
-            })
+        secureAxios
+            .get(`/active-posts/featured`)
             .then((res) => {
                 setVolunteerHuntingPost(res.data);
                 setLoading(false);
@@ -66,7 +63,7 @@ const VolunteerNeedNow = ({ searchTerm = "", selectedCategory = "all" }) => {
                 setError(error.message);
                 setLoading(false);
             });
-    }, []);
+    }, [secureAxios]);
 
     if (loading) {
         return (
@@ -140,7 +137,6 @@ const VolunteerNeedNow = ({ searchTerm = "", selectedCategory = "all" }) => {
 
     return (
         <div className="space-y-6">
-            {/* Results Count */}
             <div className="container mx-auto px-4 sm:px-6">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <div className="space-y-1">
@@ -157,7 +153,6 @@ const VolunteerNeedNow = ({ searchTerm = "", selectedCategory = "all" }) => {
                 </div>
             </div>
 
-            {/* Posts Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 container mx-auto gap-4 sm:gap-6 lg:gap-8 px-4 sm:px-6">
                 {filteredPosts.map((post) => (
                     <CometCard
@@ -166,7 +161,6 @@ const VolunteerNeedNow = ({ searchTerm = "", selectedCategory = "all" }) => {
                         translateDepth={3}
                     >
                         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col h-full group">
-                            {/* Image Section */}
                             <div className="relative w-full h-48 overflow-hidden rounded-t-2xl bg-gray-50">
                                 <img
                                     src={post?.photoUrl}
@@ -189,7 +183,6 @@ const VolunteerNeedNow = ({ searchTerm = "", selectedCategory = "all" }) => {
                                 </div>
                             </div>
 
-                            {/* Content Section */}
                             <div className="p-5 flex flex-col gap-3 flex-1">
                                 <h1
                                     onClick={() =>
@@ -200,7 +193,6 @@ const VolunteerNeedNow = ({ searchTerm = "", selectedCategory = "all" }) => {
                                     {post?.postTitle}
                                 </h1>
 
-                                {/* Info Icons */}
                                 <div className="space-y-2">
                                     <div className="flex items-center gap-2 text-sm text-gray-600">
                                         <FaMapMarkerAlt className="text-blue-500 flex-shrink-0" />
@@ -224,7 +216,6 @@ const VolunteerNeedNow = ({ searchTerm = "", selectedCategory = "all" }) => {
                                     </div>
                                 </div>
 
-                                {/* CTA Button */}
                                 <div className="pt-3 mt-auto">
                                     <Button
                                         onClick={() =>

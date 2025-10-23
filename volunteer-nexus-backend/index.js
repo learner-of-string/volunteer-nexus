@@ -12,7 +12,10 @@ const port = process.env.port || 3000;
 // middleware
 app.use(
     cors({
-        origin: "https://volunteer-nexus-f8b5d.web.app",
+        origin: [
+            "https://volunteer-nexus-f8b5d.web.app",
+            "http://localhost:5173",
+        ],
         credentials: true,
     })
 );
@@ -58,13 +61,11 @@ async function run() {
 
         // jwt authentication apis
         app.post("/jwt", async (req, res) => {
-            console.log("JWT endpoint - cookies:", req.cookies);
-            console.log("JWT endpoint - headers:", req.headers);
             const user = req.body;
             const token = jwt.sign(user, process.env.JWT_SECRET, {
                 expiresIn: "7d",
             });
-            console.log("Setting JWT cookie for user:", user.email);
+
             res.status(200)
                 .cookie("jwt_token", token, {
                     httpOnly: true,
@@ -108,7 +109,6 @@ async function run() {
         });
 
         app.get("/active-posts/featured", async (req, res) => {
-            console.log("cookies", req.cookies);
             try {
                 const result = await postCollection
                     .aggregate([
@@ -135,7 +135,6 @@ async function run() {
         });
 
         app.get("/post/:id", verifyToken, async (req, res) => {
-            console.log("inside post endpoint");
             try {
                 const { id } = req.params;
                 const result = await postCollection.findOne({
@@ -170,7 +169,6 @@ async function run() {
                 const { id } = req.params;
                 const update = req.body || {};
 
-                // Normalize deadline to ISO string if provided as Date
                 if (update.deadline instanceof Date) {
                     update.deadline = update.deadline.toISOString();
                 }
@@ -222,19 +220,16 @@ async function run() {
             }
         });
 
-        // User management endpoints
         app.post("/users", async (req, res) => {
             try {
                 const { displayName, email, photoURL } = req.body;
 
-                // Validate required fields
                 if (!displayName || !email) {
                     return res.status(400).send({
                         message: "Display name and email are required",
                     });
                 }
 
-                // Check if user already exists
                 const existingUser = await usersCollection.findOne({ email });
                 if (existingUser) {
                     return res.status(200).send({
@@ -243,7 +238,6 @@ async function run() {
                     });
                 }
 
-                // Create new user document
                 const newUser = {
                     displayName: displayName.trim(),
                     email: email.trim(),
@@ -289,7 +283,6 @@ async function run() {
         });
 
         // Application management endpoints
-        // Get applications by applicant email
         app.get("/applications/applicant/:email", async (req, res) => {
             try {
                 const { email } = req.params;
@@ -330,20 +323,17 @@ async function run() {
             try {
                 const { organizerEmail } = req.params;
 
-                // Get applications for this organizer
                 const applications = await applicationsCollection
                     .find({ creatorEmail: organizerEmail })
-                    .sort({ applicationDate: -1 }) // Sort by newest first
+                    .sort({ applicationDate: -1 })
                     .toArray();
 
-                // Get post details for each application
                 const applicationsWithPostDetails = await Promise.all(
                     applications.map(async (application) => {
                         const post = await postCollection.findOne({
                             _id: application.postId,
                         });
 
-                        // Get applicant details
                         const applicant = await usersCollection.findOne({
                             email: application.applicantEmail,
                         });
@@ -372,7 +362,6 @@ async function run() {
             }
         });
 
-        // Update application status
         app.put("/applications/:id", async (req, res) => {
             try {
                 const { id } = req.params;
@@ -415,14 +404,12 @@ async function run() {
             try {
                 const { postId, applicantEmail } = req.body;
 
-                // Validate required fields
                 if (!postId || !applicantEmail) {
                     return res.status(400).send({
                         message: "Post ID and applicant email are required",
                     });
                 }
 
-                // Check if user exists
                 const user = await usersCollection.findOne({
                     email: applicantEmail,
                 });
@@ -432,7 +419,6 @@ async function run() {
                     });
                 }
 
-                // Check if post exists
                 const post = await postCollection.findOne({
                     _id: new ObjectId(postId),
                 });
@@ -442,7 +428,6 @@ async function run() {
                     });
                 }
 
-                // Check if user has already applied to this post
                 const existingApplication =
                     await applicationsCollection.findOne({
                         postId: new ObjectId(postId),
@@ -456,7 +441,6 @@ async function run() {
                     });
                 }
 
-                // Create new application document
                 const newApplication = {
                     postId: new ObjectId(postId),
                     applicantEmail: applicantEmail,
@@ -469,13 +453,11 @@ async function run() {
                     newApplication
                 );
 
-                // Update the post's interestedVolunteers count
                 await postCollection.updateOne(
                     { _id: new ObjectId(postId) },
                     { $inc: { interestedVolunteers: 1 } }
                 );
 
-                // Add the post ID to user's appliedCampaigns array
                 await usersCollection.updateOne(
                     { email: applicantEmail },
                     { $addToSet: { appliedCampaigns: new ObjectId(postId) } }

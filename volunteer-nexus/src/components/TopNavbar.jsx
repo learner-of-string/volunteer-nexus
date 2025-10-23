@@ -30,32 +30,26 @@ import { Link, Outlet, useLocation } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
 import { toast } from "sonner";
 import CustomToast from "./CustomToast";
-import axios from "axios";
+import useAxios from "../hooks/useAxios.jsx";
 
 const TopNavBar = () => {
     const { user, signOutUser } = useAuth();
+    const secureAxios = useAxios();
     const location = useLocation();
 
     const handleSignOut = async () => {
         try {
             await signOutUser().then(() => {
-                axios
-                    .post(
-                        `${import.meta.env.VITE_SERVER_URL}/signout`,
-                        {},
-                        { withCredentials: true }
-                    )
-                    .then((res) => {
-                        console.log(res.data);
-                    });
-                toast.custom((t) => (
-                    <CustomToast
-                        type="success"
-                        onClose={() => toast.dismiss(t)}
-                    >
-                        Signed Out Successful!
-                    </CustomToast>
-                ));
+                secureAxios.post(`/signout`, {}).then(() => {
+                    toast.custom((t) => (
+                        <CustomToast
+                            type="success"
+                            onClose={() => toast.dismiss(t)}
+                        >
+                            Signed Out Successful!
+                        </CustomToast>
+                    ));
+                });
             });
         } catch (err) {
             console.error(err);
@@ -77,7 +71,32 @@ const TopNavBar = () => {
         },
     ];
 
-    // Helper function to check if a route is active
+    const userNavItems = [
+        {
+            name: "My Applications",
+            link: "/my-applications",
+            icon: ClipboardList,
+        },
+        {
+            name: "Manage Posts",
+            link: "/manage-post/me",
+            icon: Settings2,
+        },
+    ];
+
+    const basicNavItems = [
+        {
+            name: "Home",
+            link: "/",
+            icon: Home,
+        },
+        {
+            name: "All Posts",
+            link: "/all-posts",
+            icon: ClipboardList,
+        },
+    ];
+
     const isActiveRoute = (path) => {
         if (path === "/") {
             return location.pathname === "/";
@@ -90,7 +109,6 @@ const TopNavBar = () => {
     return (
         <div className="relative w-full min-h-screen flex flex-col">
             <Navbar>
-                {/* Desktop Navigation */}
                 <NavBody>
                     <NavbarLogo />
                     <NavItems items={navItems} isActiveRoute={isActiveRoute} />
@@ -131,18 +149,20 @@ const TopNavBar = () => {
                                         </div>
                                     </DropdownMenuLabel>
                                     <DropdownMenuSeparator />
-                                    <Link to="/">
-                                        <DropdownMenuItem
-                                            className={
-                                                isActiveRoute("/")
-                                                    ? "bg-blue-50 text-blue-700"
-                                                    : ""
-                                            }
-                                        >
-                                            <Home className="size-4" />
-                                            Home
-                                        </DropdownMenuItem>
-                                    </Link>
+                                    {userNavItems.map((item) => (
+                                        <Link key={item.link} to={item.link}>
+                                            <DropdownMenuItem
+                                                className={
+                                                    isActiveRoute(item.link)
+                                                        ? "bg-blue-50 text-blue-700"
+                                                        : ""
+                                                }
+                                            >
+                                                <item.icon className="size-4" />
+                                                {item.name}
+                                            </DropdownMenuItem>
+                                        </Link>
+                                    ))}
                                     <Link to="/volunteer/add-post">
                                         <DropdownMenuItem
                                             className={
@@ -154,19 +174,7 @@ const TopNavBar = () => {
                                             }
                                         >
                                             <PlusCircle className="size-4" />
-                                            Post Opportunity
-                                        </DropdownMenuItem>
-                                    </Link>
-                                    <Link to="/manage-post/me">
-                                        <DropdownMenuItem
-                                            className={
-                                                isActiveRoute("/manage-post/me")
-                                                    ? "bg-blue-50 text-blue-700"
-                                                    : ""
-                                            }
-                                        >
-                                            <Settings2 className="size-4" />
-                                            Manage my posts
+                                            New Post
                                         </DropdownMenuItem>
                                     </Link>
                                     <DropdownMenuSeparator />
@@ -188,7 +196,7 @@ const TopNavBar = () => {
                         )}
                     </div>
                 </NavBody>
-                {/* Mobile Navigation */}
+
                 <MobileNav>
                     <MobileNavHeader>
                         <NavbarLogo />
@@ -267,11 +275,81 @@ const TopNavBar = () => {
                                                 }`}
                                             />
                                             <span className="block">
-                                                Post Opportunity
+                                                New Post
+                                            </span>
+                                        </Link>
+                                        <Link
+                                            to="/all-posts"
+                                            onClick={() =>
+                                                setIsMobileMenuOpen(false)
+                                            }
+                                            className={`inline-flex items-center gap-3 rounded-lg border px-3 py-3 active:scale-[.99] transition ${
+                                                isActiveRoute("/all-posts")
+                                                    ? "bg-blue-50 border-blue-200 text-blue-700"
+                                                    : "text-neutral-800 hover:bg-gray-50"
+                                            }`}
+                                        >
+                                            <ClipboardList
+                                                className={`size-5 ${
+                                                    isActiveRoute("/all-posts")
+                                                        ? "text-blue-600"
+                                                        : "text-neutral-600"
+                                                }`}
+                                            />
+                                            <span className="block">
+                                                All Posts
                                             </span>
                                         </Link>
                                         <Link
                                             to="/dashboard"
+                                            onClick={() =>
+                                                setIsMobileMenuOpen(false)
+                                            }
+                                            className={`inline-flex items-center gap-3 rounded-lg border px-3 py-3 active:scale-[.99] transition ${
+                                                isActiveRoute("/dashboard")
+                                                    ? "bg-blue-50 border-blue-200 text-blue-700"
+                                                    : "text-neutral-800 hover:bg-gray-50"
+                                            }`}
+                                        >
+                                            <Settings2
+                                                className={`size-5 ${
+                                                    isActiveRoute("/dashboard")
+                                                        ? "text-blue-600"
+                                                        : "text-neutral-600"
+                                                }`}
+                                            />
+                                            <span className="block">
+                                                Dashboard
+                                            </span>
+                                        </Link>
+                                        <Link
+                                            to="/my-applications"
+                                            onClick={() =>
+                                                setIsMobileMenuOpen(false)
+                                            }
+                                            className={`inline-flex items-center gap-3 rounded-lg border px-3 py-3 active:scale-[.99] transition ${
+                                                isActiveRoute(
+                                                    "/my-applications"
+                                                )
+                                                    ? "bg-blue-50 border-blue-200 text-blue-700"
+                                                    : "text-neutral-800 hover:bg-gray-50"
+                                            }`}
+                                        >
+                                            <ClipboardList
+                                                className={`size-5 ${
+                                                    isActiveRoute(
+                                                        "/my-applications"
+                                                    )
+                                                        ? "text-blue-600"
+                                                        : "text-neutral-600"
+                                                }`}
+                                            />
+                                            <span className="block">
+                                                My Applications
+                                            </span>
+                                        </Link>
+                                        <Link
+                                            to="/manage-post/me"
                                             onClick={() =>
                                                 setIsMobileMenuOpen(false)
                                             }
@@ -281,7 +359,7 @@ const TopNavBar = () => {
                                                     : "text-neutral-800 hover:bg-gray-50"
                                             }`}
                                         >
-                                            <ClipboardList
+                                            <Settings2
                                                 className={`size-5 ${
                                                     isActiveRoute(
                                                         "/manage-post/me"
@@ -291,7 +369,7 @@ const TopNavBar = () => {
                                                 }`}
                                             />
                                             <span className="block">
-                                                Dashboard
+                                                Manage Posts
                                             </span>
                                         </Link>
                                     </div>
@@ -304,13 +382,44 @@ const TopNavBar = () => {
                                     </button>
                                 </div>
                             ) : (
-                                <Link
-                                    to={"/sign-in"}
-                                    onClick={() => setIsMobileMenuOpen(false)}
-                                    className="inline-flex items-center justify-center rounded-lg bg-blue-600 text-white px-4 py-3 font-semibold active:scale-[.99]"
-                                >
-                                    Sign in
-                                </Link>
+                                <div className="flex flex-col gap-4">
+                                    <div className="grid grid-cols-1 gap-3">
+                                        {basicNavItems.map((item) => (
+                                            <Link
+                                                key={item.link}
+                                                to={item.link}
+                                                onClick={() =>
+                                                    setIsMobileMenuOpen(false)
+                                                }
+                                                className={`inline-flex items-center gap-3 rounded-lg border px-3 py-3 active:scale-[.99] transition ${
+                                                    isActiveRoute(item.link)
+                                                        ? "bg-blue-50 border-blue-200 text-blue-700"
+                                                        : "text-neutral-800 hover:bg-gray-50"
+                                                }`}
+                                            >
+                                                <item.icon
+                                                    className={`size-5 ${
+                                                        isActiveRoute(item.link)
+                                                            ? "text-blue-600"
+                                                            : "text-neutral-600"
+                                                    }`}
+                                                />
+                                                <span className="block">
+                                                    {item.name}
+                                                </span>
+                                            </Link>
+                                        ))}
+                                    </div>
+                                    <Link
+                                        to={"/sign-in"}
+                                        onClick={() =>
+                                            setIsMobileMenuOpen(false)
+                                        }
+                                        className="inline-flex items-center justify-center rounded-lg bg-blue-600 text-white px-4 py-3 font-semibold active:scale-[.99]"
+                                    >
+                                        Sign in
+                                    </Link>
+                                </div>
                             )}
                         </div>
                     </MobileNavMenu>

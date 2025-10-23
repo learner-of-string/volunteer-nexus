@@ -8,48 +8,37 @@ import { toast } from "sonner";
 import ContinueWithGoogle from "../components/ContinueWithGoogle";
 import CustomToast from "../components/CustomToast";
 import useAuth from "../hooks/useAuth";
-import axios from "axios";
+import useAxios from "../hooks/useAxios.jsx";
 
 const SignIn = () => {
     const [showPassword, setShowPassword] = useState(false);
 
     const { signInWithManualEmailAndPass } = useAuth();
+    const secureAxios = useAxios();
 
     const navigate = useNavigate();
 
     const createUserInDatabase = async (userData) => {
         try {
-            const response = await axios.post(
-                `${import.meta.env.VITE_SERVER_URL}/users`,
-                {
-                    displayName: userData.displayName,
-                    email: userData.email,
-                    photoURL: userData.photoURL || "",
-                }
-            );
-            console.log("User created in database:", response.data);
+            const response = await secureAxios.post(`/users`, {
+                displayName: userData.displayName,
+                email: userData.email,
+                photoURL: userData.photoURL || "",
+            });
             return response.data;
         } catch (error) {
             console.error("Error creating user in database:", error);
-            // Don't throw error here as Firebase auth was successful
-            // Just log the error and continue
+
             return null;
         }
     };
 
     const getJWTToken = async (userData) => {
         try {
-            await axios.post(
-                `${import.meta.env.VITE_SERVER_URL}/jwt`,
-                {
-                    email: userData.email,
-                    displayName: userData.displayName,
-                },
-                {
-                    withCredentials: true,
-                }
-            );
-            console.log("JWT token set in httpOnly cookie");
+            await secureAxios.post(`/jwt`, {
+                email: userData.email,
+                displayName: userData.displayName,
+            });
             return true;
         } catch (error) {
             console.error("Error getting JWT token:", error);
@@ -64,7 +53,6 @@ const SignIn = () => {
         const password = formData.get("password");
         signInWithManualEmailAndPass(email, password)
             .then(async (userCredential) => {
-                // Create user in database after successful Firebase authentication
                 if (userCredential?.user) {
                     await createUserInDatabase({
                         displayName: userCredential.user.displayName,
@@ -72,7 +60,6 @@ const SignIn = () => {
                         photoURL: userCredential.user.photoURL,
                     });
 
-                    // Get JWT token (set in httpOnly cookie)
                     await getJWTToken({
                         email: userCredential.user.email,
                         displayName: userCredential.user.displayName,
@@ -102,7 +89,6 @@ const SignIn = () => {
         <div className="container mx-auto px-4 sm:px-6 py-8 sm:py-16">
             <div className="mx-auto w-full max-w-md">
                 <div className="relative rounded-2xl border bg-white/70 p-4 sm:p-6 shadow-[0_20px_60px_-20px_rgba(0,0,0,0.2)] backdrop-blur dark:bg-neutral-900/60">
-                    {/* Cute accent blob */}
                     <div className="pointer-events-none absolute -top-10 -right-10 h-28 w-28 rounded-full bg-blue-100 blur-2xl dark:bg-blue-500/20" />
                     <div className="pointer-events-none absolute -bottom-8 -left-10 h-24 w-24 rounded-full bg-pink-100 blur-2xl dark:bg-pink-500/20" />
 
@@ -134,12 +120,6 @@ const SignIn = () => {
                         <div className="space-y-2">
                             <div className="flex items-center justify-between">
                                 <Label htmlFor="password">Password</Label>
-                                {/* <Link
-                                    to="#"
-                                    className="text-xs text-blue-700 hover:text-blue-800 underline-offset-4 hover:underline dark:text-blue-400"
-                                >
-                                    Forgot?
-                                </Link> */}
                             </div>
                             <div className="relative">
                                 <Input

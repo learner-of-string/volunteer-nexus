@@ -55,7 +55,6 @@ const TOAST_CONFIG = {
     },
 };
 
-// type: "success" | "warning" | "error" | "info" | "failed" (alias of error)
 const CustomToast = ({ type = "info", children, onClose, title }) => {
     const normalizedType = type === "failed" ? "error" : type;
     const cfg = TOAST_CONFIG[normalizedType] || TOAST_CONFIG.info;
@@ -70,7 +69,6 @@ const CustomToast = ({ type = "info", children, onClose, title }) => {
             role="status"
             aria-live="polite"
         >
-            {/* Cute gradient accent bar */}
             <div
                 className={cn(
                     "absolute inset-x-0 top-0 h-1 bg-gradient-to-r",
@@ -101,7 +99,6 @@ const CustomToast = ({ type = "info", children, onClose, title }) => {
                             </p>
                         </div>
 
-                        {/* Close */}
                         <button
                             type="button"
                             aria-label="Dismiss"
@@ -135,7 +132,7 @@ export default CustomToast;
 // import { toast } from "sonner";
 // toast.custom((t) => (
 //     <CustomToast
-//         type="success"
+//         type="success" | "warning" | "error" | "info" | "failed" (alias of error)
 //         onClose={() => toast.dismiss(t)}
 //     >
 //         Your profile has been updated successfully.

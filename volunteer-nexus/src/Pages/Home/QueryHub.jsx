@@ -38,9 +38,7 @@ const QueryHub = ({
         <div className="container mx-auto px-4 sm:px-6">
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-6">
                 <div className="space-y-4">
-                    {/* Main Filter Row */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {/* Search */}
                         <div className="sm:col-span-2 lg:col-span-1">
                             <label className="block text-sm font-medium text-gray-700 mb-2">
                                 Search Opportunities
@@ -57,7 +55,6 @@ const QueryHub = ({
                             </div>
                         </div>
 
-                        {/* Category Filter */}
                         <div className="sm:col-span-2 lg:col-span-1">
                             <label className="block text-sm font-medium text-gray-700 mb-2">
                                 Filter by Category
@@ -87,7 +84,6 @@ const QueryHub = ({
                             </Select>
                         </div>
 
-                        {/* Clear Filters */}
                         <div className="sm:col-span-2 lg:col-span-1 flex items-end">
                             {(searchTerm || selectedCategory !== "all") && (
                                 <button

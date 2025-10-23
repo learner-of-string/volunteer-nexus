@@ -9,18 +9,18 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import axios from "axios";
 import { useCallback, useEffect, useState } from "react";
 import {
     FaClock,
+    FaFilter,
     FaMapMarkerAlt,
     FaSearch,
     FaUsers,
-    FaFilter,
 } from "react-icons/fa";
-import { Link, useNavigate } from "react-router-dom";
-import formatDate from "../lib/formateDate";
+import { useNavigate } from "react-router-dom";
+import useAxios from "../hooks/useAxios.jsx";
 import { categoriesItem } from "../lib/categoriesItem";
+import formatDate from "../lib/formateDate";
 
 const AllPost = () => {
     const [allPosts, setAllPosts] = useState([]);
@@ -33,26 +33,25 @@ const AllPost = () => {
 
     const navigate = useNavigate();
 
-    const fetchAllPosts = async () => {
+    const secureAxios = useAxios();
+
+    const fetchAllPosts = useCallback(async () => {
         try {
             setLoading(true);
             setError(null);
-            const response = await axios.get(
-                `${import.meta.env.VITE_SERVER_URL}/all-posts`
-            );
-            setAllPosts(response.data);
+            const res = await secureAxios.get(`/all-posts`);
+            setAllPosts(res.data);
         } catch (err) {
             console.error("Error fetching posts:", err);
             setError(err.message);
         } finally {
             setLoading(false);
         }
-    };
+    }, [secureAxios]);
 
     const filterAndSortPosts = useCallback(() => {
         let filtered = [...allPosts];
 
-        // Filter by search term
         if (searchTerm) {
             filtered = filtered.filter(
                 (post) =>
@@ -71,7 +70,6 @@ const AllPost = () => {
             );
         }
 
-        // Filter by category
         if (selectedCategory !== "all") {
             filtered = filtered.filter(
                 (post) =>
@@ -80,7 +78,6 @@ const AllPost = () => {
             );
         }
 
-        // Sort posts
         filtered.sort((a, b) => {
             switch (sortBy) {
                 case "newest":
@@ -104,7 +101,7 @@ const AllPost = () => {
 
     useEffect(() => {
         fetchAllPosts();
-    }, []);
+    }, [fetchAllPosts]);
 
     useEffect(() => {
         filterAndSortPosts();
@@ -173,9 +170,7 @@ const AllPost = () => {
 
     return (
         <div className="min-h-screen bg-gray-50">
-            {/* Header Section */}
             <div className="relative bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 text-white overflow-hidden">
-                {/* Background Pattern */}
                 <div className="absolute inset-0 opacity-20">
                     <div
                         className="absolute inset-0"
@@ -186,33 +181,29 @@ const AllPost = () => {
                     ></div>
                 </div>
 
-                {/* Floating Elements */}
                 <div className="absolute top-10 left-10 w-20 h-20 bg-white/10 rounded-full blur-xl animate-pulse"></div>
                 <div className="absolute top-32 right-20 w-32 h-32 bg-blue-300/20 rounded-full blur-2xl animate-pulse delay-1000"></div>
                 <div className="absolute bottom-10 left-1/4 w-16 h-16 bg-indigo-300/20 rounded-full blur-lg animate-pulse delay-500"></div>
 
                 <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16 lg:py-20">
                     <div className="text-center space-y-6">
-                        {/* Badge */}
                         <div className="group relative inline-flex items-center justify-center bg-white/10 backdrop-blur-sm border border-white/20 rounded-full transition-all duration-500 ease-out cursor-pointer overflow-hidden min-w-[12px] min-h-[12px] hover:min-w-[200px] hover:min-h-[40px] hover:shadow-2xl hover:shadow-green-400/30 hover:border-green-400/50">
-                            {/* Collapsed state - single dot with curiosity effects */}
                             <div className="relative">
                                 <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse group-hover:opacity-0 transition-opacity duration-300"></div>
-                                {/* Subtle glow ring that appears occasionally */}
+
                                 <div className="absolute inset-0 w-3 h-3 bg-green-400 rounded-full animate-ping opacity-20 group-hover:opacity-0 transition-opacity duration-300"></div>
-                                {/* Mysterious sparkle effect */}
+
                                 <div className="absolute -top-1 -right-1 w-1 h-1 bg-yellow-300 rounded-full animate-ping opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-200"></div>
                                 <div className="absolute -bottom-1 -left-1 w-1 h-1 bg-blue-300 rounded-full animate-ping opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-300"></div>
                             </div>
 
-                            {/* Expanded state - full text with reveal animation */}
                             <div className="absolute inset-0 flex items-center justify-center gap-2 px-4 py-2 opacity-0 group-hover:opacity-100 transition-all duration-500 delay-100 transform scale-95 group-hover:scale-100">
                                 <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
                                 <span className="text-sm font-medium text-white whitespace-nowrap transform translate-y-2 group-hover:translate-y-0 transition-transform duration-500 delay-200">
                                     Live Opportunities
                                 </span>
                                 <div className="w-2 h-2 bg-yellow-300 rounded-full animate-ping"></div>
-                                {/* Animated arrow that slides in */}
+
                                 <div className="w-2 h-2 transform translate-x-2 group-hover:translate-x-0 transition-transform duration-500 delay-300">
                                     <svg
                                         className="w-2 h-2 text-white"
@@ -230,13 +221,11 @@ const AllPost = () => {
                                 </div>
                             </div>
 
-                            {/* Subtle hint text that appears briefly */}
                             <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 text-xs text-white/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-500 whitespace-nowrap">
                                 ✨ Hover to explore
                             </div>
                         </div>
 
-                        {/* Main Heading */}
                         <div className="flex md:flex-row flex-col gap-1.5 items-center justify-center">
                             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold bg-gradient-to-r from-white via-blue-100 to-blue-200 bg-clip-text text-transparent leading-tight">
                                 Volunteer
@@ -246,7 +235,6 @@ const AllPost = () => {
                             </h1>
                         </div>
 
-                        {/* Subtitle */}
                         <p className="text-lg md:text-xl text-blue-100 max-w-3xl mx-auto leading-relaxed font-light">
                             Discover meaningful volunteer opportunities and make
                             a
@@ -257,7 +245,6 @@ const AllPost = () => {
                             in your community
                         </p>
 
-                        {/* Stats */}
                         <div className="flex flex-wrap justify-center gap-8 md:gap-12 py-4">
                             <div className="text-center min-w-[100px]">
                                 <div className="text-2xl md:text-3xl font-bold text-yellow-300 mb-1">
@@ -298,7 +285,6 @@ const AllPost = () => {
                             </div>
                         </div>
 
-                        {/* CTA Buttons */}
                         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4">
                             <button
                                 onClick={() =>
@@ -348,7 +334,6 @@ const AllPost = () => {
                             </button>
                         </div>
 
-                        {/* Scroll Indicator */}
                         <div className="pt-8 animate-bounce">
                             <div className="w-6 h-10 border-2 border-white/30 rounded-full flex justify-center mx-auto">
                                 <div className="w-1 h-3 bg-white/60 rounded-full mt-2 animate-pulse"></div>
@@ -357,17 +342,13 @@ const AllPost = () => {
                     </div>
                 </div>
 
-                {/* Bottom Gradient Fade */}
                 <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-b from-transparent via-blue-600/20 to-gray-50"></div>
             </div>
 
-            {/* Filters and Search */}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-8">
                     <div className="space-y-4">
-                        {/* Main Filter Row */}
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {/* Search */}
                             <div className="lg:col-span-1">
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
                                     Search Opportunities
@@ -384,7 +365,6 @@ const AllPost = () => {
                                 </div>
                             </div>
 
-                            {/* Category Filter */}
                             <div className="lg:col-span-1">
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
                                     Filter by Category
@@ -416,7 +396,6 @@ const AllPost = () => {
                                 </Select>
                             </div>
 
-                            {/* Sort */}
                             <div className="lg:col-span-1">
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
                                     Sort by
@@ -446,7 +425,6 @@ const AllPost = () => {
                             </div>
                         </div>
 
-                        {/* Clear Filters Row */}
                         {(searchTerm ||
                             selectedCategory !== "all" ||
                             sortBy !== "newest") && (
@@ -463,7 +441,6 @@ const AllPost = () => {
                     </div>
                 </div>
 
-                {/* Results Count */}
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
                     <div className="space-y-1">
                         <p className="text-gray-700 font-medium">
@@ -488,7 +465,6 @@ const AllPost = () => {
                     )}
                 </div>
 
-                {/* Posts Grid */}
                 {filteredPosts.length === 0 ? (
                     <div className="text-center py-16">
                         <div className="text-gray-400 text-6xl mb-6">🔍</div>
@@ -512,7 +488,6 @@ const AllPost = () => {
                                 translateDepth={3}
                             >
                                 <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col h-full group">
-                                    {/* Image Section */}
                                     <div className="relative w-full h-48 overflow-hidden rounded-t-2xl bg-gray-50">
                                         <img
                                             src={post?.photoUrl}
@@ -536,7 +511,6 @@ const AllPost = () => {
                                             </Badge>
                                         </div>
 
-                                        {/* Deadline Badge */}
                                         <div className="absolute top-3 right-3">
                                             <Badge
                                                 variant="destructive"
@@ -548,7 +522,6 @@ const AllPost = () => {
                                         </div>
                                     </div>
 
-                                    {/* Content Section */}
                                     <div className="p-6 flex flex-col gap-4 flex-1">
                                         <h1
                                             onClick={() =>
@@ -561,14 +534,12 @@ const AllPost = () => {
                                             {post?.postTitle}
                                         </h1>
 
-                                        {/* Organization */}
                                         <div className="text-sm text-gray-600">
                                             <span className="font-medium">
                                                 by {post?.creatorOrg}
                                             </span>
                                         </div>
 
-                                        {/* Info Icons */}
                                         <div className="space-y-3">
                                             <div className="flex items-center gap-2 text-sm text-gray-600">
                                                 <FaMapMarkerAlt className="text-blue-500 flex-shrink-0" />
@@ -588,12 +559,10 @@ const AllPost = () => {
                                             </div>
                                         </div>
 
-                                        {/* Description Preview */}
                                         <p className="text-sm text-gray-600 line-clamp-2 flex-1">
                                             {post?.description}
                                         </p>
 
-                                        {/* CTA Button */}
                                         <div className="pt-4 mt-auto">
                                             <Button
                                                 onClick={() =>

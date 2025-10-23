@@ -4,44 +4,39 @@ import { FcGoogle } from "react-icons/fc";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import useAuth from "../hooks/useAuth";
+import useAxios from "../hooks/useAxios.jsx";
 import CustomToast from "./CustomToast";
-import axios from "axios";
 
 const ContinueWithGoogle = () => {
     const { signInWithGoogle } = useAuth();
+    const secureAxios = useAxios();
     const navigate = useNavigate();
 
     const createUserInDatabase = async (userData) => {
         try {
-            const response = await axios.post(
-                `${import.meta.env.VITE_SERVER_URL}/users`,
-                {
-                    displayName: userData.displayName,
-                    email: userData.email,
-                    photoURL: userData.photoURL || "",
-                }
-            );
-            console.log("User created in database:", response.data);
+            const response = await secureAxios.post(`/users`, {
+                displayName: userData.displayName,
+                email: userData.email,
+                photoURL: userData.photoURL || "",
+            });
             return response.data;
         } catch (error) {
             console.error("Error creating user in database:", error);
+            toast.custom((t) => (
+                <CustomToast type="error" onClose={() => toast.dismiss(t)}>
+                    Failed to create user profile. Please try again.
+                </CustomToast>
+            ));
             return null;
         }
     };
 
     const getJWTToken = async (userData) => {
         try {
-            await axios.post(
-                `${import.meta.env.VITE_SERVER_URL}/jwt`,
-                {
-                    email: userData.email,
-                    displayName: userData.displayName,
-                },
-                {
-                    withCredentials: true,
-                }
-            );
-            console.log("JWT token set in httpOnly cookie");
+            await secureAxios.post(`/jwt`, {
+                email: userData.email,
+                displayName: userData.displayName,
+            });
             return true;
         } catch (error) {
             console.error("Error getting JWT token:", error);
@@ -52,9 +47,6 @@ const ContinueWithGoogle = () => {
     const handleGoogleSignIn = () => {
         signInWithGoogle()
             .then(async (res) => {
-                console.log(res.user);
-
-                // Create user in database after successful Google authentication
                 if (res?.user) {
                     await createUserInDatabase({
                         displayName: res.user.displayName,
@@ -62,7 +54,6 @@ const ContinueWithGoogle = () => {
                         photoURL: res.user.photoURL,
                     });
 
-                    // Get JWT token (set in httpOnly cookie)
                     await getJWTToken({
                         email: res.user.email,
                         displayName: res.user.displayName,

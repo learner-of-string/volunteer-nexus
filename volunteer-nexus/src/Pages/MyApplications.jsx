@@ -1,7 +1,7 @@
 import CustomToast from "@/components/CustomToast";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import axios from "axios";
+import useAxios from "../hooks/useAxios.jsx";
 import React, { useCallback, useEffect, useState } from "react";
 import {
     FaArrowLeft,
@@ -22,10 +22,10 @@ const MyApplications = () => {
     const [applications, setApplications] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const secureAxios = useAxios();
     const { user } = useAuth();
     const navigate = useNavigate();
 
-    // Status configuration for applications
     const statusConfig = {
         pending: {
             label: "Pending",
@@ -76,10 +76,8 @@ const MyApplications = () => {
             setLoading(true);
             setError(null);
 
-            const response = await axios.get(
-                `${import.meta.env.VITE_SERVER_URL}/applications/applicant/${
-                    user.email
-                }`
+            const response = await secureAxios.get(
+                `/applications/applicant/${user.email}`
             );
             setApplications(response.data);
         } catch (err) {
@@ -146,7 +144,6 @@ const MyApplications = () => {
     return (
         <div className="min-h-screen bg-gray-50">
             <div className="max-w-7xl mx-auto px-4 py-8">
-                {/* Header */}
                 <div className="mb-8">
                     <Button
                         onClick={handleBackClick}
@@ -164,7 +161,6 @@ const MyApplications = () => {
                     </p>
                 </div>
 
-                {/* Applications Table */}
                 <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
                     <div className="px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-green-50 to-emerald-50">
                         <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">

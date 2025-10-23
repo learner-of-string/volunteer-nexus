@@ -34,7 +34,6 @@ export const Navbar = ({ children, className }) => {
     return (
         <Motion.div
             ref={ref}
-            // IMPORTANT: Change this to class of `fixed` if you want the navbar to be fixed
             className={cn("fixed inset-x-0 top-0 z-40 w-full", className)}
         >
             {React.Children.map(children, (child) =>

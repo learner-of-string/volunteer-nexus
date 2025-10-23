@@ -7,11 +7,12 @@ import React, { useState } from "react";
 import { FiEye, FiEyeOff } from "react-icons/fi";
 import { toast } from "sonner";
 import ContinueWithGoogle from "../components/ContinueWithGoogle";
-import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import { useNavigate, Link } from "react-router-dom";
+import useAxios from "../hooks/useAxios.jsx";
 
 const SignUp = () => {
     const { signUpWithEmailPassword } = useAuth();
+    const secureAxios = useAxios();
     const [form, setForm] = useState({
         name: "",
         email: "",
@@ -31,37 +32,24 @@ const SignUp = () => {
 
     const createUserInDatabase = async (userData) => {
         try {
-            const response = await axios.post(
-                `${import.meta.env.VITE_SERVER_URL}/users`,
-                {
-                    displayName: userData.displayName,
-                    email: userData.email,
-                    photoURL: userData.photoURL || "",
-                }
-            );
-            console.log("User created in database:", response.data);
+            const response = await secureAxios.post(`/users`, {
+                displayName: userData.displayName,
+                email: userData.email,
+                photoURL: userData.photoURL || "",
+            });
             return response.data;
         } catch (error) {
             console.error("Error creating user in database:", error);
-            // Don't throw error here as Firebase auth was successful
-            // Just log the error and continue
             return null;
         }
     };
 
     const getJWTToken = async (userData) => {
         try {
-            await axios.post(
-                `${import.meta.env.VITE_SERVER_URL}/jwt`,
-                {
-                    email: userData.email,
-                    displayName: userData.displayName,
-                },
-                {
-                    withCredentials: true,
-                }
-            );
-            console.log("JWT token set in httpOnly cookie");
+            await secureAxios.post(`/jwt`, {
+                email: userData.email,
+                displayName: userData.displayName,
+            });
             return true;
         } catch (error) {
             console.error("Error getting JWT token:", error);
@@ -104,7 +92,6 @@ const SignUp = () => {
             form.password
         )
             .then(async (userCredential) => {
-                // Create user in database after successful Firebase authentication
                 if (userCredential?.user) {
                     await createUserInDatabase({
                         displayName: form.name.trim(),
@@ -112,7 +99,6 @@ const SignUp = () => {
                         photoURL: form.photoURL.trim(),
                     });
 
-                    // Get JWT token (set in httpOnly cookie)
                     await getJWTToken({
                         email: form.email.trim(),
                         displayName: form.name.trim(),
@@ -252,6 +238,18 @@ const SignUp = () => {
                 <div className="h-px w-full bg-gray-300 dark:bg-neutral-700" />
             </div>
             <ContinueWithGoogle />
+
+            <div className="mt-6 text-center">
+                <p className="text-sm text-gray-600 dark:text-gray-300">
+                    Already have an account?{" "}
+                    <Link
+                        to="/sign-in"
+                        className="text-blue-600 hover:text-blue-700 font-medium hover:underline"
+                    >
+                        Sign in here
+                    </Link>
+                </p>
+            </div>
         </div>
     );
 };

@@ -1,9 +1,9 @@
+import CustomToast from "@/components/CustomToast";
 import axios from "axios";
 import { useEffect } from "react";
-import useAuth from "./useAuth";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import CustomToast from "@/components/CustomToast";
+import useAuth from "./useAuth.js";
 
 const axiosInstance = axios.create({
     baseURL: `${import.meta.env.VITE_SERVER_URL}`,

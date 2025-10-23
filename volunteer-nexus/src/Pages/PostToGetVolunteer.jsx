@@ -17,7 +17,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import axios from "axios";
+import useAxios from "../hooks/useAxios.jsx";
 import { useEffect, useState } from "react";
 import {
     FaBuilding,
@@ -36,6 +36,7 @@ import { categoriesItem } from "../lib/categoriesItem";
 const PostToGetVolunteer = () => {
     const { id } = useParams();
     const location = useLocation();
+    const secureAxios = useAxios();
     const routePostId = location?.state?.postId;
     const storedPostId =
         typeof window !== "undefined"
@@ -63,7 +64,6 @@ const PostToGetVolunteer = () => {
         interestedVolunteers: 0,
     });
 
-    // Update organization fields when user changes
     useEffect(() => {
         if (user && !isEdit) {
             setFormData((prev) => ({
@@ -76,12 +76,11 @@ const PostToGetVolunteer = () => {
     }, [user, isEdit]);
 
     const handleInputChange = (field, value) => {
-        // Prevent editing organization fields only when creating new posts
         if (!isEdit && (field === "creatorOrg" || field === "creatorEmail")) {
             return;
         }
         setFormData((prev) => ({ ...prev, [field]: value }));
-        // Clear error when user starts typing
+
         if (errors[field]) {
             setErrors((prev) => ({ ...prev, [field]: "" }));
         }
@@ -103,7 +102,6 @@ const PostToGetVolunteer = () => {
         if (!formData.description.trim())
             newErrors.description = "Description is required";
 
-        // Organization fields are auto-populated from user data, so no validation needed
         if (!user) {
             newErrors.organizer = "Please sign in to create a post";
         }
@@ -112,15 +110,12 @@ const PostToGetVolunteer = () => {
         return Object.keys(newErrors).length === 0;
     };
 
-    // Prefill on edit mode
     useEffect(() => {
         if (!isEdit) return;
         let isActive = true;
         (async () => {
             try {
-                const { data } = await axios.get(
-                    `${import.meta.env.VITE_SERVER_URL}/post/${effectiveId}`
-                );
+                const { data } = await secureAxios.get(`/post/${effectiveId}`);
                 if (!isActive) return;
                 const incomingCategory = data?.category ?? "";
                 const matchedCategory = categoriesItem.find(
@@ -151,7 +146,7 @@ const PostToGetVolunteer = () => {
         return () => {
             isActive = false;
         };
-    }, [effectiveId, isEdit, storedPostId]);
+    }, [effectiveId, isEdit, storedPostId, secureAxios]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -168,20 +163,14 @@ const PostToGetVolunteer = () => {
             };
 
             const method = isEdit ? "put" : "post";
-            const url = isEdit
-                ? `${import.meta.env.VITE_SERVER_URL}/post/${effectiveId}`
-                : `${import.meta.env.VITE_SERVER_URL}/posts/new`;
+            const url = isEdit ? `/post/${effectiveId}` : `/posts/new`;
 
-            await axios[method](url, payload, {
-                headers: { "Content-Type": "application/json" },
-            });
+            await secureAxios[method](url, payload);
 
             setSuccess(true);
             if (isEdit) {
-                // Optionally navigate back or to manage page after a moment
                 setTimeout(() => navigate("/manage-post/me"), 800);
             } else {
-                // Reset form on create
                 setFormData({
                     postTitle: "",
                     photoUrl: "",
@@ -203,7 +192,6 @@ const PostToGetVolunteer = () => {
         }
     };
 
-    // Show sign-in prompt if user is not authenticated
     if (!user && !isEdit) {
         return (
             <div className="min-h-screen bg-gradient-to-br from-red-50 to-orange-50 flex items-center justify-center px-4">
@@ -266,34 +254,34 @@ const PostToGetVolunteer = () => {
 
     return (
         <div className="min-h-screen bg-gray-50">
-            <div className="max-w-4xl mx-auto px-4 py-8">
-                {/* Header Section */}
-                <div className="text-center mb-12">
-                    <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full mb-6 shadow-lg">
-                        <FaUsers className="text-white text-2xl" />
+            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+                <div className="text-center mb-8 sm:mb-12">
+                    <div className="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full mb-4 sm:mb-6 shadow-lg">
+                        <FaUsers className="text-white text-lg sm:text-2xl" />
                     </div>
-                    <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+                    <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-3 sm:mb-4">
                         {isEdit
                             ? "Update Opportunity"
                             : "Create a New Opportunity"}
                     </h1>
-                    <p className="text-lg text-gray-700 max-w-2xl mx-auto">
+                    <p className="text-base sm:text-lg text-gray-700 max-w-2xl mx-auto px-2">
                         Fill out the form below to find passionate volunteers
                         for your cause. Make your opportunity stand out with a
                         compelling description.
                     </p>
                 </div>
 
-                {/* Form Card */}
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                    <form onSubmit={handleSubmit} className="p-8 space-y-8">
-                        {/* Post Title */}
-                        <div className="space-y-3">
+                <div className="bg-white rounded-xl sm:rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                    <form
+                        onSubmit={handleSubmit}
+                        className="p-4 sm:p-6 lg:p-8 space-y-6 sm:space-y-8"
+                    >
+                        <div className="space-y-2 sm:space-y-3">
                             <Label
                                 htmlFor="postTitle"
-                                className="text-sm font-semibold text-gray-900 flex items-center gap-2"
+                                className="text-xs sm:text-sm font-semibold text-gray-900 flex items-center gap-2"
                             >
-                                <div className="w-3 h-3 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full shadow-sm"></div>
+                                <div className="w-2 h-2 sm:w-3 sm:h-3 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full shadow-sm"></div>
                                 Post Title
                             </Label>
                             <Input
@@ -307,27 +295,26 @@ const PostToGetVolunteer = () => {
                                         e.target.value
                                     )
                                 }
-                                className={`h-12 ${
+                                className={`h-10 sm:h-12 text-sm sm:text-base ${
                                     errors.postTitle
                                         ? "border-red-500 focus:border-red-500"
                                         : ""
                                 }`}
                             />
                             {errors.postTitle && (
-                                <p className="text-red-500 text-sm flex items-center gap-1">
-                                    <IoAlertCircle className="w-4 h-4" />
+                                <p className="text-red-500 text-xs sm:text-sm flex items-center gap-1">
+                                    <IoAlertCircle className="w-3 h-3 sm:w-4 sm:h-4" />
                                     {errors.postTitle}
                                 </p>
                             )}
                         </div>
 
-                        {/* Photo URL */}
-                        <div className="space-y-3">
+                        <div className="space-y-2 sm:space-y-3">
                             <Label
                                 htmlFor="photoUrl"
-                                className="text-sm font-semibold text-gray-900 flex items-center gap-2"
+                                className="text-xs sm:text-sm font-semibold text-gray-900 flex items-center gap-2"
                             >
-                                <FaImage className="text-blue-500" />
+                                <FaImage className="text-blue-500 text-sm sm:text-base" />
                                 Thumbnail Photo URL
                             </Label>
                             <div className="relative">
@@ -342,27 +329,27 @@ const PostToGetVolunteer = () => {
                                             e.target.value
                                         )
                                     }
-                                    className={`h-12 pl-10 ${
+                                    className={`h-10 sm:h-12 pl-8 sm:pl-10 text-sm sm:text-base ${
                                         errors.photoUrl
                                             ? "border-red-500 focus:border-red-500"
                                             : ""
                                     }`}
                                 />
-                                <LuUpload className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                                <LuUpload className="absolute left-2 sm:left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm sm:text-base" />
                             </div>
                             {errors.photoUrl && (
-                                <p className="text-red-500 text-sm flex items-center gap-1">
-                                    <IoAlertCircle className="w-4 h-4" />
+                                <p className="text-red-500 text-xs sm:text-sm flex items-center gap-1">
+                                    <IoAlertCircle className="w-3 h-3 sm:w-4 sm:h-4" />
                                     {errors.photoUrl}
                                 </p>
                             )}
                         </div>
-                        {/* Category and Deadline Row */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-                            <div className="space-y-3">
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 lg:gap-6">
+                            <div className="space-y-2 sm:space-y-3">
                                 <Label
                                     htmlFor="category"
-                                    className="text-sm font-semibold text-gray-900 flex items-center gap-2"
+                                    className="text-xs sm:text-sm font-semibold text-gray-900 flex items-center gap-2"
                                 >
                                     <Badge
                                         variant="outline"
@@ -378,7 +365,7 @@ const PostToGetVolunteer = () => {
                                     }
                                 >
                                     <SelectTrigger
-                                        className={`h-12 ${
+                                        className={`h-10 sm:h-12 text-sm sm:text-base ${
                                             errors.category
                                                 ? "border-red-500 focus:border-red-500"
                                                 : ""
@@ -422,19 +409,19 @@ const PostToGetVolunteer = () => {
                                     </SelectContent>
                                 </Select>
                                 {errors.category && (
-                                    <p className="text-red-500 text-sm flex items-center gap-1">
-                                        <IoAlertCircle className="w-4 h-4" />
+                                    <p className="text-red-500 text-xs sm:text-sm flex items-center gap-1">
+                                        <IoAlertCircle className="w-3 h-3 sm:w-4 sm:h-4" />
                                         {errors.category}
                                     </p>
                                 )}
                             </div>
 
-                            <div className="space-y-3">
+                            <div className="space-y-2 sm:space-y-3">
                                 <Label
                                     htmlFor="deadline"
-                                    className="text-sm font-semibold text-gray-900 flex items-center gap-2"
+                                    className="text-xs sm:text-sm font-semibold text-gray-900 flex items-center gap-2"
                                 >
-                                    <FaCalendarAlt className="text-red-500" />
+                                    <FaCalendarAlt className="text-red-500 text-sm sm:text-base" />
                                     Deadline
                                 </Label>
                                 <Popover open={open} onOpenChange={setOpen}>
@@ -442,7 +429,7 @@ const PostToGetVolunteer = () => {
                                         <Button
                                             variant="outline"
                                             id="deadline"
-                                            className={`h-12 w-full justify-between font-normal ${
+                                            className={`h-10 sm:h-12 w-full justify-between font-normal text-sm sm:text-base ${
                                                 errors.deadline
                                                     ? "border-red-500 focus:border-red-500"
                                                     : ""
@@ -451,7 +438,7 @@ const PostToGetVolunteer = () => {
                                             {date
                                                 ? date.toLocaleDateString()
                                                 : "Select date"}
-                                            <LuChevronDown />
+                                            <LuChevronDown className="w-3 h-3 sm:w-4 sm:h-4" />
                                         </Button>
                                     </PopoverTrigger>
                                     <PopoverContent
@@ -462,6 +449,8 @@ const PostToGetVolunteer = () => {
                                             mode="single"
                                             selected={date}
                                             captionLayout="dropdown"
+                                            fromYear={2025}
+                                            toYear={2035}
                                             onSelect={(selectedDate) => {
                                                 setDate(selectedDate);
                                                 handleInputChange(
@@ -474,21 +463,21 @@ const PostToGetVolunteer = () => {
                                     </PopoverContent>
                                 </Popover>
                                 {errors.deadline && (
-                                    <p className="text-red-500 text-sm flex items-center gap-1">
-                                        <IoAlertCircle className="w-4 h-4" />
+                                    <p className="text-red-500 text-xs sm:text-sm flex items-center gap-1">
+                                        <IoAlertCircle className="w-3 h-3 sm:w-4 sm:h-4" />
                                         {errors.deadline}
                                     </p>
                                 )}
                             </div>
                         </div>
-                        {/* Volunteers and Location Row */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-                            <div className="space-y-3">
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 lg:gap-6">
+                            <div className="space-y-2 sm:space-y-3">
                                 <Label
                                     htmlFor="necessaryVolunteer"
-                                    className="text-sm font-semibold text-gray-900 flex items-center gap-2"
+                                    className="text-xs sm:text-sm font-semibold text-gray-900 flex items-center gap-2"
                                 >
-                                    <FaUsers className="text-gray-500" />
+                                    <FaUsers className="text-gray-500 text-sm sm:text-base" />
                                     Number of Volunteers Needed
                                 </Label>
                                 <Input
@@ -502,26 +491,26 @@ const PostToGetVolunteer = () => {
                                             e.target.value
                                         )
                                     }
-                                    className={`h-12 ${
+                                    className={`h-10 sm:h-12 text-sm sm:text-base ${
                                         errors.necessaryVolunteer
                                             ? "border-red-500 focus:border-red-500"
                                             : ""
                                     }`}
                                 />
                                 {errors.necessaryVolunteer && (
-                                    <p className="text-red-500 text-sm flex items-center gap-1">
-                                        <IoAlertCircle className="w-4 h-4" />
+                                    <p className="text-red-500 text-xs sm:text-sm flex items-center gap-1">
+                                        <IoAlertCircle className="w-3 h-3 sm:w-4 sm:h-4" />
                                         {errors.necessaryVolunteer}
                                     </p>
                                 )}
                             </div>
 
-                            <div className="space-y-3">
+                            <div className="space-y-2 sm:space-y-3">
                                 <Label
                                     htmlFor="location"
-                                    className="text-sm font-semibold text-gray-900 flex items-center gap-2"
+                                    className="text-xs sm:text-sm font-semibold text-gray-900 flex items-center gap-2"
                                 >
-                                    <FaMapMarkerAlt className="text-gray-500" />
+                                    <FaMapMarkerAlt className="text-gray-500 text-sm sm:text-base" />
                                     Location
                                 </Label>
                                 <Input
@@ -535,27 +524,27 @@ const PostToGetVolunteer = () => {
                                             e.target.value
                                         )
                                     }
-                                    className={`h-12 ${
+                                    className={`h-10 sm:h-12 text-sm sm:text-base ${
                                         errors.location
                                             ? "border-red-500 focus:border-red-500"
                                             : ""
                                     }`}
                                 />
                                 {errors.location && (
-                                    <p className="text-red-500 text-sm flex items-center gap-1">
-                                        <IoAlertCircle className="w-4 h-4" />
+                                    <p className="text-red-500 text-xs sm:text-sm flex items-center gap-1">
+                                        <IoAlertCircle className="w-3 h-3 sm:w-4 sm:h-4" />
                                         {errors.location}
                                     </p>
                                 )}
                             </div>
                         </div>
-                        {/* Description */}
-                        <div className="space-y-3">
+
+                        <div className="space-y-2 sm:space-y-3">
                             <Label
                                 htmlFor="description"
-                                className="text-sm font-semibold text-gray-900 flex items-center gap-2"
+                                className="text-xs sm:text-sm font-semibold text-gray-900 flex items-center gap-2"
                             >
-                                <div className="w-3 h-3 bg-gradient-to-r from-green-500 to-green-600 rounded-full shadow-sm"></div>
+                                <div className="w-2 h-2 sm:w-3 sm:h-3 bg-gradient-to-r from-green-500 to-green-600 rounded-full shadow-sm"></div>
                                 Description
                             </Label>
                             <Textarea
@@ -568,37 +557,41 @@ const PostToGetVolunteer = () => {
                                         e.target.value
                                     )
                                 }
-                                className={`min-h-[120px] ${
+                                className={`min-h-[100px] sm:min-h-[120px] text-sm sm:text-base ${
                                     errors.description
                                         ? "border-red-500 focus:border-red-500"
                                         : ""
                                 }`}
                             />
                             {errors.description && (
-                                <p className="text-red-500 text-sm flex items-center gap-1">
-                                    <IoAlertCircle className="w-4 h-4" />
+                                <p className="text-red-500 text-xs sm:text-sm flex items-center gap-1">
+                                    <IoAlertCircle className="w-3 h-3 sm:w-4 sm:h-4" />
                                     {errors.description}
                                 </p>
                             )}
                         </div>
 
-                        {/* Organization Details */}
-                        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-6 space-y-6 border border-blue-100">
-                            <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                                <FaBuilding className="text-blue-600" />
-                                Organization Details
-                                <Badge variant="secondary" className="text-xs">
+                        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-4 sm:p-6 space-y-4 sm:space-y-6 border border-blue-100">
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+                                <h3 className="text-base sm:text-lg font-semibold text-gray-900 flex items-center gap-2">
+                                    <FaBuilding className="text-blue-600 text-sm sm:text-base" />
+                                    Organization Details
+                                </h3>
+                                <Badge
+                                    variant="secondary"
+                                    className="text-xs w-fit"
+                                >
                                     Auto-filled from your account
                                 </Badge>
-                            </h3>
+                            </div>
 
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-                                <div className="space-y-3">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 lg:gap-6">
+                                <div className="space-y-2 sm:space-y-3">
                                     <Label
                                         htmlFor="organizer"
-                                        className="text-sm font-semibold text-gray-900 flex items-center gap-2"
+                                        className="text-xs sm:text-sm font-semibold text-gray-900 flex items-center gap-2"
                                     >
-                                        <FaBuilding className="text-blue-500" />
+                                        <FaBuilding className="text-blue-500 text-sm sm:text-base" />
                                         Organization Name
                                     </Label>
                                     <Input
@@ -613,26 +606,26 @@ const PostToGetVolunteer = () => {
                                             )
                                         }
                                         readOnly={true}
-                                        className={`h-12 bg-gray-50 cursor-not-allowed ${
+                                        className={`h-10 sm:h-12 bg-gray-50 cursor-not-allowed text-sm sm:text-base ${
                                             errors.organizer
                                                 ? "border-red-500 focus:border-red-500"
                                                 : ""
                                         }`}
                                     />
                                     {errors.organizer && (
-                                        <p className="text-red-500 text-sm flex items-center gap-1">
-                                            <IoAlertCircle className="w-4 h-4" />
+                                        <p className="text-red-500 text-xs sm:text-sm flex items-center gap-1">
+                                            <IoAlertCircle className="w-3 h-3 sm:w-4 sm:h-4" />
                                             {errors.organizer}
                                         </p>
                                     )}
                                 </div>
 
-                                <div className="space-y-3">
+                                <div className="space-y-2 sm:space-y-3">
                                     <Label
                                         htmlFor="orgEmail"
-                                        className="text-sm font-semibold text-gray-900 flex items-center gap-2"
+                                        className="text-xs sm:text-sm font-semibold text-gray-900 flex items-center gap-2"
                                     >
-                                        <FaEnvelope className="text-blue-500" />
+                                        <FaEnvelope className="text-blue-500 text-sm sm:text-base" />
                                         Organization Email
                                     </Label>
                                     <Input
@@ -647,15 +640,15 @@ const PostToGetVolunteer = () => {
                                             )
                                         }
                                         readOnly={true}
-                                        className={`h-12 bg-gray-50 cursor-not-allowed ${
+                                        className={`h-10 sm:h-12 bg-gray-50 cursor-not-allowed text-sm sm:text-base ${
                                             errors.orgEmail
                                                 ? "border-red-500 focus:border-red-500"
                                                 : ""
                                         }`}
                                     />
                                     {errors.orgEmail && (
-                                        <p className="text-red-500 text-sm flex items-center gap-1">
-                                            <IoAlertCircle className="w-4 h-4" />
+                                        <p className="text-red-500 text-xs sm:text-sm flex items-center gap-1">
+                                            <IoAlertCircle className="w-3 h-3 sm:w-4 sm:h-4" />
                                             {errors.orgEmail}
                                         </p>
                                     )}
@@ -663,26 +656,29 @@ const PostToGetVolunteer = () => {
                             </div>
                         </div>
 
-                        {/* Submit Button */}
-                        <div className="pt-6 border-t border-gray-200">
+                        <div className="pt-4 sm:pt-6 border-t border-gray-200">
                             <Button
                                 type="submit"
                                 disabled={loading}
-                                className="w-full h-14 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold text-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
+                                className="w-full h-12 sm:h-14 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold text-base sm:text-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
                             >
                                 {loading ? (
                                     <div className="flex items-center gap-2">
-                                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                                        {isEdit
-                                            ? "Updating Opportunity..."
-                                            : "Creating Opportunity..."}
+                                        <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                        <span className="text-sm sm:text-base">
+                                            {isEdit
+                                                ? "Updating Opportunity..."
+                                                : "Creating Opportunity..."}
+                                        </span>
                                     </div>
                                 ) : (
                                     <div className="flex items-center gap-2 cursor-pointer">
-                                        <LuCheck className="w-5 h-5" />
-                                        {isEdit
-                                            ? "Update Volunteer Opportunity"
-                                            : "Create Volunteer Opportunity"}
+                                        <LuCheck className="w-4 h-4 sm:w-5 sm:h-5" />
+                                        <span className="text-sm sm:text-base">
+                                            {isEdit
+                                                ? "Update Volunteer Opportunity"
+                                                : "Create Volunteer Opportunity"}
+                                        </span>
                                     </div>
                                 )}
                             </Button>
