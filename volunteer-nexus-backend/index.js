@@ -26,16 +26,10 @@ const uri = process.env.DB_URI;
 
 const verifyToken = (req, res, next) => {
     const token = req.cookies?.jwt_token;
-    console.log("Received cookies:", req.cookies);
-    console.log("JWT token:", token);
     if (!token) return res.status(401).send({ message: "Unauthorized" });
 
     jwt.verify(token, process.env.JWT_SECRET, (error, decoded) => {
-        if (error) {
-            console.log("JWT verification error:", error);
-            return res.status(401).send({ message: "Unauthorized" });
-        }
-        console.log("JWT verified for user:", decoded);
+        if (error) return res.status(401).send({ message: "Unauthorized" });
         req.user = decoded;
         next();
     });
