@@ -13,7 +13,7 @@ const port = process.env.port || 3000;
 app.use(
     cors({
         origin: [
-            "https://volunteer-nexus-f8b5d.web.app",
+            "https://volunter-nexus-frontend.vercel.app",
             "http://localhost:5173",
         ],
         credentials: true,
@@ -26,10 +26,16 @@ const uri = process.env.DB_URI;
 
 const verifyToken = (req, res, next) => {
     const token = req.cookies?.jwt_token;
+    console.log("Received cookies:", req.cookies);
+    console.log("JWT token:", token);
     if (!token) return res.status(401).send({ message: "Unauthorized" });
 
     jwt.verify(token, process.env.JWT_SECRET, (error, decoded) => {
-        if (error) return res.status(401).send({ message: "Unauthorized" });
+        if (error) {
+            console.log("JWT verification error:", error);
+            return res.status(401).send({ message: "Unauthorized" });
+        }
+        console.log("JWT verified for user:", decoded);
         req.user = decoded;
         next();
     });
@@ -49,10 +55,10 @@ async function run() {
         // Connect the client to the server	(optional starting in v4.7)
         // await client.connect();
         // Send a ping to confirm a successful connection
-        await client.db("admin").command({ ping: 1 });
-        console.log(
-            "Pinged your deployment. You successfully connected to MongoDB!"
-        );
+        // await client.db("admin").command({ ping: 1 });
+        // console.log(
+        //     "Pinged your deployment. You successfully connected to MongoDB!"
+        // );
 
         const database = client.db("volunteerNexus");
         const postCollection = database.collection("volunteerNeedPosts");
@@ -69,7 +75,7 @@ async function run() {
             res.status(200)
                 .cookie("jwt_token", token, {
                     httpOnly: true,
-                    secure: true,
+                    secure: process.env.NODE_ENV === "production",
                     sameSite: "lax",
                     maxAge: 7 * 24 * 60 * 60 * 1000,
                 })
@@ -482,7 +488,7 @@ async function run() {
             try {
                 res.clearCookie("jwt_token", {
                     httpOnly: true,
-                    secure: true,
+                    secure: process.env.NODE_ENV === "production",
                     sameSite: "lax",
                     maxAge: 0,
                 });
