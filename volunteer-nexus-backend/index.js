@@ -66,13 +66,34 @@ async function run() {
                 expiresIn: "7d",
             });
 
+            // Set secure to false for development
+            const isProduction = process.env.NODE_ENV === "production";
+            console.log(
+                "Environment:",
+                process.env.NODE_ENV,
+                "Secure:",
+                isProduction
+            );
+
+            // Cookie settings for cross-origin support
+            const cookieOptions = {
+                httpOnly: true,
+                maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+                path: "/",
+            };
+
+            if (isProduction) {
+                // Production: secure cookies with sameSite none for cross-origin
+                cookieOptions.secure = true;
+                cookieOptions.sameSite = "none";
+            } else {
+                // Development: allow HTTP cookies
+                cookieOptions.secure = false;
+                cookieOptions.sameSite = "lax";
+            }
+
             res.status(200)
-                .cookie("jwt_token", token, {
-                    httpOnly: true,
-                    secure: process.env.NODE_ENV === "production",
-                    sameSite: "lax",
-                    maxAge: 7 * 24 * 60 * 60 * 1000,
-                })
+                .cookie("jwt_token", token, cookieOptions)
                 .send({ message: "JWT token created successfully" });
         });
 
@@ -480,12 +501,24 @@ async function run() {
 
         app.post("/signout", async (req, res) => {
             try {
-                res.clearCookie("jwt_token", {
+                const isProduction = process.env.NODE_ENV === "production";
+                
+                // Clear cookie with same settings as creation
+                const clearOptions = {
                     httpOnly: true,
-                    secure: process.env.NODE_ENV === "production",
-                    sameSite: "lax",
                     maxAge: 0,
-                });
+                    path: "/",
+                };
+
+                if (isProduction) {
+                    clearOptions.secure = true;
+                    clearOptions.sameSite = "none";
+                } else {
+                    clearOptions.secure = false;
+                    clearOptions.sameSite = "lax";
+                }
+
+                res.clearCookie("jwt_token", clearOptions);
                 res.status(200).send({
                     message: "Signed out successfully",
                 });
