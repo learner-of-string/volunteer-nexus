@@ -3,7 +3,7 @@ import axios from "axios";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import useAuth from "./useAuth.js";
+import useAuth from "./useAuth";
 
 const axiosInstance = axios.create({
     baseURL: `${import.meta.env.VITE_SERVER_URL}`,

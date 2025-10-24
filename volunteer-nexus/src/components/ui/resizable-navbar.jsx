@@ -53,7 +53,7 @@ export const NavBody = ({ children, className, visible, solid }) => {
                 boxShadow: visible
                     ? "0 0 24px rgba(34, 42, 53, 0.06), 0 1px 1px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(34, 42, 53, 0.04), 0 0 4px rgba(34, 42, 53, 0.08), 0 16px 68px rgba(47, 48, 55, 0.05), 0 1px 0 rgba(255, 255, 255, 0.1) inset"
                     : "none",
-                width: visible ? "40%" : "100%",
+                width: visible ? "800px" : "100%",
                 y: visible ? 20 : 0,
             }}
             transition={{
@@ -65,7 +65,7 @@ export const NavBody = ({ children, className, visible, solid }) => {
                 minWidth: "320px",
             }}
             className={cn(
-                "relative z-[60] mx-auto hidden w-full max-w-7xl flex-row items-center justify-between self-start rounded-full bg-transparent px-2 sm:px-4 py-2 lg:flex dark:bg-transparent",
+                "relative z-[60] mx-auto hidden w-full max-w-7xl flex-row items-center justify-between self-start rounded-full bg-transparent px-2 sm:px-4 py-2 lg:flex dark:bg-transparent gap-4",
                 visible && !solid && "bg-blue-50",
                 solid && "bg-white",
                 className
@@ -83,7 +83,7 @@ export const NavItems = ({ items, className, onItemClick, isActiveRoute }) => {
         <Motion.div
             onMouseLeave={() => setHovered(null)}
             className={cn(
-                "absolute inset-0 hidden flex-1 flex-row items-center justify-center space-x-1 sm:space-x-2 text-sm font-medium text-zinc-600 transition duration-200 hover:text-zinc-800 lg:flex pointer-events-none",
+                "absolute inset-0 hidden flex-1 flex-row items-center justify-center space-x-1 sm:space-x-2 lg:space-x-3 xl:space-x-4 text-sm font-medium text-zinc-600 transition duration-200 hover:text-zinc-800 lg:flex pointer-events-none",
                 className
             )}
         >
@@ -96,7 +96,7 @@ export const NavItems = ({ items, className, onItemClick, isActiveRoute }) => {
                         onMouseEnter={() => setHovered(idx)}
                         onClick={onItemClick}
                         className={cn(
-                            "relative px-2 sm:px-4 py-2 pointer-events-auto transition-colors duration-200",
+                            "relative px-2 sm:px-3 lg:px-4 xl:px-5 py-2 pointer-events-auto transition-colors duration-200 whitespace-nowrap",
                             isActive
                                 ? "text-blue-600 dark:text-blue-400 font-semibold"
                                 : "text-neutral-600 dark:text-neutral-300"
@@ -200,7 +200,7 @@ export const NavbarLogo = () => {
     return (
         <Link
             to={"/"}
-            className="relative z-20 mr-4 flex items-center space-x-2 px-2 py-1 text-sm font-normal text-black"
+            className="relative z-20 mr-4 lg:mr-6 xl:mr-8 flex items-center space-x-2 px-2 py-1 text-sm font-normal text-black flex-shrink-0"
         >
             <img
                 src={navLogo}
@@ -208,7 +208,7 @@ export const NavbarLogo = () => {
                 width={30}
                 height={30}
             />
-            <span className="font-medium text-black dark:text-white">
+            <span className="font-medium text-black dark:text-white hidden sm:inline">
                 Volunteer Nexus
             </span>
         </Link>

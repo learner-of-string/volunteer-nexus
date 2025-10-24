@@ -1,13 +1,17 @@
 import DisableDevtool from "disable-devtool";
+import { getAuth, signOut } from "firebase/auth";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { RouterProvider } from "react-router-dom";
 import { Toaster } from "sonner";
+import sounds from "./components/Sounds.jsx";
+import app from "./firebase/firebase.init";
 import "./index.css";
 import AuthProvider from "./Providers/AuthProvider.jsx";
 import routes from "./Routes/Routes.jsx";
-import { getAuth, signOut } from "firebase/auth";
-import app from "./firebase/firebase.init";
+
+// Flag to prevent multiple executions
+let dangerScreenActive = false;
 
 // Configure DisableDevtool with custom danger screen
 DisableDevtool({
@@ -19,6 +23,13 @@ DisableDevtool({
     disableCtrlShiftJ: true, // Disable Ctrl+Shift+J
     disableCtrlU: true, // Disable Ctrl+U
     ondevtoolopen: () => {
+        // Prevent multiple executions
+        if (dangerScreenActive) return;
+        dangerScreenActive = true;
+
+        // Stop any existing sound and play once
+        sounds.dangerZone.stop();
+        sounds.dangerZone.play();
         // Sign out user immediately using Firebase
         const auth = getAuth(app);
         signOut(auth).catch((error) => {
@@ -78,6 +89,9 @@ DisableDevtool({
         }, 3000);
     },
     ondevtoolclose: () => {
+        // Reset the flag
+        dangerScreenActive = false;
+
         // Remove danger screen if dev tools are closed
         const dangerScreen = document.getElementById("devtools-danger-screen");
         if (dangerScreen) {

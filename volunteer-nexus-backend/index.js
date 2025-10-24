@@ -13,7 +13,7 @@ const port = process.env.port || 3000;
 app.use(
     cors({
         origin: [
-            "https://volunter-nexus-frontend.vercel.app",
+            "https://volunteer-nexus-frontend.vercel.app",
             "http://localhost:5173",
         ],
         credentials: true,
@@ -64,36 +64,16 @@ async function run() {
             const user = req.body;
             const token = jwt.sign(user, process.env.JWT_SECRET, {
                 expiresIn: "7d",
+                secure: true, //make it false in localhost
             });
 
-            // Set secure to false for development
-            const isProduction = process.env.NODE_ENV === "production";
-            console.log(
-                "Environment:",
-                process.env.NODE_ENV,
-                "Secure:",
-                isProduction
-            );
-
             // Cookie settings for cross-origin support
-            const cookieOptions = {
-                httpOnly: true,
-                maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-                path: "/",
-            };
-
-            if (isProduction) {
-                // Production: secure cookies with sameSite none for cross-origin
-                cookieOptions.secure = true;
-                cookieOptions.sameSite = "none";
-            } else {
-                // Development: allow HTTP cookies
-                cookieOptions.secure = false;
-                cookieOptions.sameSite = "lax";
-            }
-
             res.status(200)
-                .cookie("jwt_token", token, cookieOptions)
+                .cookie("jwt_token", token, {
+                    httpOnly: true,
+                    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+                    secure: true, //make it false in localhost
+                })
                 .send({ message: "JWT token created successfully" });
         });
 
@@ -185,7 +165,7 @@ async function run() {
             }
         });
 
-        app.put("/post/:id", async (req, res) => {
+        app.put("/post/:id", verifyToken, async (req, res) => {
             try {
                 const { id } = req.params;
                 const update = req.body || {};
@@ -211,7 +191,7 @@ async function run() {
             }
         });
 
-        app.post("/posts/new", async (req, res) => {
+        app.post("/posts/new", verifyToken, async (req, res) => {
             try {
                 const newPost = {
                     ...req.body,
@@ -224,7 +204,7 @@ async function run() {
             }
         });
 
-        app.delete("/posts/:id", async (req, res) => {
+        app.delete("/posts/:id", verifyToken, async (req, res) => {
             try {
                 const { id } = req.params;
                 const result = await postCollection.deleteOne({
@@ -241,7 +221,7 @@ async function run() {
             }
         });
 
-        app.post("/users", async (req, res) => {
+        app.post("/users", verifyToken, async (req, res) => {
             try {
                 const { displayName, email, photoURL } = req.body;
 
@@ -283,7 +263,7 @@ async function run() {
             }
         });
 
-        app.get("/users/:email", async (req, res) => {
+        app.get("/users/:email", verifyToken, async (req, res) => {
             try {
                 const { email } = req.params;
                 const user = await usersCollection.findOne({ email });
@@ -304,86 +284,94 @@ async function run() {
         });
 
         // Application management endpoints
-        app.get("/applications/applicant/:email", async (req, res) => {
-            try {
-                const { email } = req.params;
+        app.get(
+            "/applications/applicant/:email",
+            verifyToken,
+            async (req, res) => {
+                try {
+                    const { email } = req.params;
 
-                const applications = await applicationsCollection
-                    .find({ applicantEmail: email })
-                    .sort({ applicationDate: -1 })
-                    .toArray();
+                    const applications = await applicationsCollection
+                        .find({ applicantEmail: email })
+                        .sort({ applicationDate: -1 })
+                        .toArray();
 
-                const applicationsWithPostDetails = await Promise.all(
-                    applications.map(async (application) => {
-                        const post = await postCollection.findOne({
-                            _id: application.postId,
-                        });
+                    const applicationsWithPostDetails = await Promise.all(
+                        applications.map(async (application) => {
+                            const post = await postCollection.findOne({
+                                _id: application.postId,
+                            });
 
-                        return {
-                            _id: application._id,
-                            postId: application.postId,
-                            postTitle: post?.postTitle || "Post not found",
-                            category: post?.category || "Unknown",
-                            applicantEmail: application.applicantEmail,
-                            organizerEmail: application.creatorEmail,
-                            status: application.status,
-                            appliedDate: application.applicationDate,
-                        };
-                    })
-                );
+                            return {
+                                _id: application._id,
+                                postId: application.postId,
+                                postTitle: post?.postTitle || "Post not found",
+                                category: post?.category || "Unknown",
+                                applicantEmail: application.applicantEmail,
+                                organizerEmail: application.creatorEmail,
+                                status: application.status,
+                                appliedDate: application.applicationDate,
+                            };
+                        })
+                    );
 
-                res.status(200).send(applicationsWithPostDetails);
-            } catch (error) {
-                res.status(500).send({
-                    message: "Failed to fetch applicant applications",
-                    error: error.message,
-                });
+                    res.status(200).send(applicationsWithPostDetails);
+                } catch (error) {
+                    res.status(500).send({
+                        message: "Failed to fetch applicant applications",
+                        error: error.message,
+                    });
+                }
             }
-        });
-        app.get("/applications/:organizerEmail", async (req, res) => {
-            try {
-                const { organizerEmail } = req.params;
+        );
+        app.get(
+            "/applications/:organizerEmail",
+            verifyToken,
+            async (req, res) => {
+                try {
+                    const { organizerEmail } = req.params;
 
-                const applications = await applicationsCollection
-                    .find({ creatorEmail: organizerEmail })
-                    .sort({ applicationDate: -1 })
-                    .toArray();
+                    const applications = await applicationsCollection
+                        .find({ creatorEmail: organizerEmail })
+                        .sort({ applicationDate: -1 })
+                        .toArray();
 
-                const applicationsWithPostDetails = await Promise.all(
-                    applications.map(async (application) => {
-                        const post = await postCollection.findOne({
-                            _id: application.postId,
-                        });
+                    const applicationsWithPostDetails = await Promise.all(
+                        applications.map(async (application) => {
+                            const post = await postCollection.findOne({
+                                _id: application.postId,
+                            });
 
-                        const applicant = await usersCollection.findOne({
-                            email: application.applicantEmail,
-                        });
+                            const applicant = await usersCollection.findOne({
+                                email: application.applicantEmail,
+                            });
 
-                        return {
-                            _id: application._id,
-                            postId: application.postId,
-                            postTitle: post?.postTitle || "Post not found",
-                            category: post?.category || "Unknown",
-                            applicantName:
-                                applicant?.displayName || "Unknown User",
-                            applicantEmail: application.applicantEmail,
-                            organizerEmail: application.creatorEmail,
-                            status: application.status,
-                            appliedDate: application.applicationDate,
-                        };
-                    })
-                );
+                            return {
+                                _id: application._id,
+                                postId: application.postId,
+                                postTitle: post?.postTitle || "Post not found",
+                                category: post?.category || "Unknown",
+                                applicantName:
+                                    applicant?.displayName || "Unknown User",
+                                applicantEmail: application.applicantEmail,
+                                organizerEmail: application.creatorEmail,
+                                status: application.status,
+                                appliedDate: application.applicationDate,
+                            };
+                        })
+                    );
 
-                res.status(200).send(applicationsWithPostDetails);
-            } catch (error) {
-                res.status(500).send({
-                    message: "Failed to fetch applications",
-                    error: error.message,
-                });
+                    res.status(200).send(applicationsWithPostDetails);
+                } catch (error) {
+                    res.status(500).send({
+                        message: "Failed to fetch applications",
+                        error: error.message,
+                    });
+                }
             }
-        });
+        );
 
-        app.put("/applications/:id", async (req, res) => {
+        app.put("/applications/:id", verifyToken, async (req, res) => {
             try {
                 const { id } = req.params;
                 const { status } = req.body || {};
@@ -421,16 +409,18 @@ async function run() {
             }
         });
 
-        app.post("/applications", async (req, res) => {
+        app.post("/applications", verifyToken, async (req, res) => {
             try {
                 const { postId, applicantEmail } = req.body;
 
+                // Validate required fields
                 if (!postId || !applicantEmail) {
                     return res.status(400).send({
                         message: "Post ID and applicant email are required",
                     });
                 }
 
+                // Check if user exists
                 const user = await usersCollection.findOne({
                     email: applicantEmail,
                 });
@@ -440,6 +430,7 @@ async function run() {
                     });
                 }
 
+                // Check if post exists
                 const post = await postCollection.findOne({
                     _id: new ObjectId(postId),
                 });
@@ -449,12 +440,12 @@ async function run() {
                     });
                 }
 
+                // Check for existing application
                 const existingApplication =
                     await applicationsCollection.findOne({
                         postId: new ObjectId(postId),
-                        applicantEmail: applicantEmail,
+                        applicantEmail,
                     });
-
                 if (existingApplication) {
                     return res.status(409).send({
                         message:
@@ -462,28 +453,33 @@ async function run() {
                     });
                 }
 
+                // Create new application
                 const newApplication = {
                     postId: new ObjectId(postId),
-                    applicantEmail: applicantEmail,
+                    applicantEmail,
                     creatorEmail: post.creatorEmail,
                     status: "pending",
                     applicationDate: new Date(),
                 };
 
+                // Insert application
                 const result = await applicationsCollection.insertOne(
                     newApplication
                 );
 
+                // Increment volunteer count in the post
                 await postCollection.updateOne(
                     { _id: new ObjectId(postId) },
                     { $inc: { interestedVolunteers: 1 } }
                 );
 
+                // Update user's appliedCampaigns array
                 await usersCollection.updateOne(
                     { email: applicantEmail },
                     { $addToSet: { appliedCampaigns: new ObjectId(postId) } }
                 );
 
+                // Send success response
                 res.status(201).send({
                     message: "Application submitted successfully",
                     application: {
@@ -501,24 +497,11 @@ async function run() {
 
         app.post("/signout", async (req, res) => {
             try {
-                const isProduction = process.env.NODE_ENV === "production";
-                
-                // Clear cookie with same settings as creation
-                const clearOptions = {
+                res.clearCookie("jwt_token", {
                     httpOnly: true,
                     maxAge: 0,
-                    path: "/",
-                };
-
-                if (isProduction) {
-                    clearOptions.secure = true;
-                    clearOptions.sameSite = "none";
-                } else {
-                    clearOptions.secure = false;
-                    clearOptions.sameSite = "lax";
-                }
-
-                res.clearCookie("jwt_token", clearOptions);
+                    secure: true, //make it false in localhost
+                });
                 res.status(200).send({
                     message: "Signed out successfully",
                 });

@@ -319,7 +319,9 @@ const ManageMyPost = () => {
                                     <span className="hidden sm:inline">
                                         Volunteer Request
                                     </span>
-                                    <span className="sm:hidden">Apps</span>
+                                    <span className="sm:hidden">
+                                        Volunteers
+                                    </span>
                                     {myVolunteerRequests.length > 0 && (
                                         <Badge
                                             variant="secondary"
@@ -391,14 +393,16 @@ const ManageMyPost = () => {
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                {myVolunteerPosts.map(
-                                                    (post) => (
+                                                {myVolunteerPosts
+                                                    .slice()
+                                                    .reverse()
+                                                    .map((post) => (
                                                         <tr
                                                             key={post._id}
                                                             className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
                                                         >
                                                             <td className="py-3 sm:py-4 px-2 sm:px-4">
-                                                                <div className="font-medium text-gray-900 text-sm sm:text-base">
+                                                                <div className="font-medium text-gray-900 sm:text-sm text-base">
                                                                     <Link
                                                                         className="hover:underline"
                                                                         to={`/volunteer-need/${post._id}`}
@@ -484,8 +488,7 @@ const ManageMyPost = () => {
                                                                 </div>
                                                             </td>
                                                         </tr>
-                                                    )
-                                                )}
+                                                    ))}
                                             </tbody>
                                         </table>
                                     </div>
@@ -569,8 +572,55 @@ const ManageMyPost = () => {
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                {myVolunteerRequests.map(
-                                                    (request) => (
+                                                {myVolunteerRequests
+                                                    .sort((a, b) => {
+                                                        // Define priority order: pending/under_review/waitlisted first, then accepted/declined last
+                                                        const getPriority = (
+                                                            status
+                                                        ) => {
+                                                            if (
+                                                                status ===
+                                                                    "pending" ||
+                                                                status ===
+                                                                    "under_review" ||
+                                                                status ===
+                                                                    "waitlisted"
+                                                            ) {
+                                                                return 1; // Higher priority (show first)
+                                                            }
+                                                            return 2; // Lower priority (show last)
+                                                        };
+
+                                                        const priorityA =
+                                                            getPriority(
+                                                                a.status
+                                                            );
+                                                        const priorityB =
+                                                            getPriority(
+                                                                b.status
+                                                            );
+
+                                                        // If same priority, sort by applied date (newest first)
+                                                        if (
+                                                            priorityA ===
+                                                            priorityB
+                                                        ) {
+                                                            return (
+                                                                new Date(
+                                                                    b.appliedDate
+                                                                ) -
+                                                                new Date(
+                                                                    a.appliedDate
+                                                                )
+                                                            );
+                                                        }
+
+                                                        return (
+                                                            priorityA -
+                                                            priorityB
+                                                        );
+                                                    })
+                                                    .map((request) => (
                                                         <tr
                                                             key={request._id}
                                                             className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
@@ -772,8 +822,7 @@ const ManageMyPost = () => {
                                                                 </div>
                                                             </td>
                                                         </tr>
-                                                    )
-                                                )}
+                                                    ))}
                                             </tbody>
                                         </table>
                                     </div>
