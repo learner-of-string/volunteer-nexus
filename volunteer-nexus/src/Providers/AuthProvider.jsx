@@ -9,7 +9,7 @@ import {
     updateProfile,
 } from "firebase/auth";
 import React, { useEffect, useState, useCallback } from "react";
-import AuthContext from "../contexts/AuthContext";
+import AuthContext from "../contexts/AuthContext.jsx";
 import app from "../firebase/firebase.init";
 
 const AuthProvider = ({ children }) => {
